@@ -6504,6 +6504,250 @@ run(function()
 end)
 	
 run(function()
+    local Dodgeaura
+    local oldrealremote
+
+    Dodgeaura = vape.Categories.Utility:CreateModule({
+        Name = 'Dodgeaura',
+        Function = function(callback)
+            if callback then
+                -- Save the original function to restore later
+                oldrealremote = bedwars.ClientConstructor.Function.new
+                bedwars.ClientConstructor.Function.new = function(self, ind, ...)
+                    local res = oldrealremote(self, ind, ...)
+                    local oldRemote = res.instance
+
+                    if oldRemote and oldRemote.Name == remotes.FireProjectile then
+                        res.instance = {
+                            InvokeServer = function(...)
+                                -- Custom behavior to dodge incoming players
+                                local player = game.Players.LocalPlayer
+                                local range = 15
+                                local speed = 16
+                                local auraPart = player.Character.HumanoidRootPart
+
+                                for _, otherPlayer in pairs(game.Players:GetChildren()) do
+                                    if otherPlayer ~= player and otherPlayer.Character then
+                                        local distance = (otherPlayer.Character.HumanoidRootPart.Position - auraPart.Position).Magnitude
+                                        if distance < range then
+                                            -- Move away from the player
+                                            local direction = (auraPart.Position - otherPlayer.Character.HumanoidRootPart.Position).unit
+                                            player.Character.HumanoidRootPart.CFrame = player.Character.HumanoidRootPart.CFrame + direction * speed
+                                        end
+                                    end
+                                end
+                                return oldRemote:InvokeServer(select(2, ...))
+                            end
+                        }
+                    end
+
+                    return res
+                end
+            else
+                bedwars.ClientConstructor.Function.new = oldrealremote
+                oldrealremote = nil
+            end
+        end,
+        Tooltip = 'Moves away from incoming players.'
+    })
+end)
+
+run(function()
+    local Rocketaura
+    local oldrealremote
+
+    Rocketaura = vape.Categories.Utility:CreateModule({
+        Name = 'Rocketaura',
+        Function = function(callback)
+            if callback then
+                -- Save the original function to restore later
+                oldrealremote = bedwars.ClientConstructor.Function.new
+                bedwars.ClientConstructor.Function.new = function(self, ind, ...)
+                    local res = oldrealremote(self, ind, ...)
+                    local oldRemote = res.instance
+
+                    if oldRemote and oldRemote.Name == remotes.FireProjectile then
+                        res.instance = {
+                            InvokeServer = function(...)
+                                -- Custom behavior to rocket the player into the air
+                                local player = game.Players.LocalPlayer
+                                local range = 10
+                                local speed = 500
+                                local auraPart = player.Character.HumanoidRootPart
+
+                                for _, otherPlayer in pairs(game.Players:GetChildren()) do
+                                    if otherPlayer ~= player and otherPlayer.Character then
+                                        local distance = (otherPlayer.Character.HumanoidRootPart.Position - auraPart.Position).Magnitude
+                                        if distance < range then
+                                            otherPlayer.Character.HumanoidRootPart:ApplyImpulse(Vector3.new(0, speed, 0))
+                                        end
+                                    end
+                                end
+                                return oldRemote:InvokeServer(select(2, ...))
+                            end
+                        }
+                    end
+
+                    return res
+                end
+            else
+                bedwars.ClientConstructor.Function.new = oldrealremote
+                oldrealremote = nil
+            end
+        end,
+        Tooltip = 'Launches players into the sky quickly.'
+    })
+end)
+
+run(function()
+    local Stickaura
+    local oldrealremote
+
+    Stickaura = vape.Categories.Utility:CreateModule({
+        Name = 'Stickaura',
+        Function = function(callback)
+            if callback then
+                -- Save the original function to restore later
+                oldrealremote = bedwars.ClientConstructor.Function.new
+                bedwars.ClientConstructor.Function.new = function(self, ind, ...)
+                    local res = oldrealremote(self, ind, ...)
+                    local oldRemote = res.instance
+
+                    if oldRemote and oldRemote.Name == remotes.FireProjectile then
+                        res.instance = {
+                            InvokeServer = function(...)
+                                -- Custom behavior to embed the player in the ground
+                                local player = game.Players.LocalPlayer
+                                local range = 10
+                                local smashForce = 200
+                                local auraPart = player.Character.HumanoidRootPart
+
+                                for _, otherPlayer in pairs(game.Players:GetChildren()) do
+                                    if otherPlayer ~= player and otherPlayer.Character then
+                                        local distance = (otherPlayer.Character.HumanoidRootPart.Position - auraPart.Position).Magnitude
+                                        if distance < range then
+                                            local direction = (otherPlayer.Character.HumanoidRootPart.Position - auraPart.Position).unit
+                                            otherPlayer.Character.HumanoidRootPart:ApplyImpulse(direction * smashForce)
+                                            otherPlayer.Character.HumanoidRootPart.Anchored = true
+                                            wait(1)
+                                            otherPlayer.Character.HumanoidRootPart.Anchored = false
+                                        end
+                                    end
+                                end
+                                return oldRemote:InvokeServer(select(2, ...))
+                            end
+                        }
+                    end
+
+                    return res
+                end
+            else
+                bedwars.ClientConstructor.Function.new = oldrealremote
+                oldrealremote = nil
+            end
+        end,
+        Tooltip = 'Smashes and embeds the player into the ground.'
+    })
+end)
+
+run(function()
+    local Flingaura
+    local oldrealremote
+
+    Flingaura = vape.Categories.Utility:CreateModule({
+        Name = 'Flingaura',
+        Function = function(callback)
+            if callback then
+                -- Save the original function to restore later
+                oldrealremote = bedwars.ClientConstructor.Function.new
+                bedwars.ClientConstructor.Function.new = function(self, ind, ...)
+                    local res = oldrealremote(self, ind, ...)
+                    local oldRemote = res.instance
+
+                    if oldRemote and oldRemote.Name == remotes.FireProjectile then
+                        res.instance = {
+                            InvokeServer = function(...)
+                                -- Custom behavior to push the player away
+                                local player = game.Players.LocalPlayer
+                                local range = 10
+                                local pushForce = 100
+                                local auraPart = player.Character.HumanoidRootPart
+
+                                for _, otherPlayer in pairs(game.Players:GetChildren()) do
+                                    if otherPlayer ~= player and otherPlayer.Character then
+                                        local distance = (otherPlayer.Character.HumanoidRootPart.Position - auraPart.Position).Magnitude
+                                        if distance < range then
+                                            local direction = (otherPlayer.Character.HumanoidRootPart.Position - auraPart.Position).unit
+                                            otherPlayer.Character.HumanoidRootPart:ApplyImpulse(direction * pushForce)
+                                        end
+                                    end
+                                end
+                                return oldRemote:InvokeServer(select(2, ...))
+                            end
+                        }
+                    end
+
+                    return res
+                end
+            else
+                bedwars.ClientConstructor.Function.new = oldrealremote
+                oldrealremote = nil
+            end
+        end,
+        Tooltip = 'Pushes players away with force.'
+    })
+end)
+
+run(function()
+    local Aladinaura
+    local oldrealremote
+
+    Aladinaura = vape.Categories.Utility:CreateModule({
+        Name = 'Aladinaura',
+        Function = function(callback)
+            if callback then
+                -- Save the original function to restore later
+                oldrealremote = bedwars.ClientConstructor.Function.new
+                bedwars.ClientConstructor.Function.new = function(self, ind, ...)
+                    local res = oldrealremote(self, ind, ...)
+                    local oldRemote = res.instance
+
+                    if oldRemote and oldRemote.Name == remotes.FireProjectile then
+                        res.instance = {
+                            InvokeServer = function(...)
+                                -- Custom aura behavior to lift and follow
+                                -- When a player is within range, it lifts and follows them
+                                local player = game.Players.LocalPlayer
+                                local range = 8
+                                local followSpeed = 10
+                                local auraPart = player.Character.HumanoidRootPart
+
+                                for _, otherPlayer in pairs(game.Players:GetChildren()) do
+                                    if otherPlayer ~= player and otherPlayer.Character then
+                                        local distance = (otherPlayer.Character.HumanoidRootPart.Position - auraPart.Position).Magnitude
+                                        if distance < range then
+                                            auraPart.Position = otherPlayer.Character.HumanoidRootPart.Position + Vector3.new(0, 5, 0)
+                                            player.Character.HumanoidRootPart.CFrame = CFrame.new(auraPart.Position)
+                                        end
+                                    end
+                                end
+                                return oldRemote:InvokeServer(select(2, ...))
+                            end
+                        }
+                    end
+
+                    return res
+                end
+            else
+                bedwars.ClientConstructor.Function.new = oldrealremote
+                oldrealremote = nil
+            end
+        end,
+        Tooltip = 'Lifts and follows a player within range.'
+    })
+end)
+
+run(function()
 	local Freecam
 	local Value
 	local randomkey, module, old = httpService:GenerateGUID(false)
