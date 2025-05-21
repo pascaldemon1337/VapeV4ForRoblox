@@ -6459,7 +6459,7 @@ run(function()
     local InstantTransAura
     local oldrealremote
 
-    InstantTransAura = vape.Categories.Utility:CreateModule({
+    InstantTransAura = vape.Categories.Blatant:CreateModule({
         Name = 'InstantTransAura',
         Function = function(callback)
             if callback then
@@ -6503,6 +6503,114 @@ run(function()
     })
 end)
 	
+run(function()
+    local SpeedAura = vape.Categories.Blatant:CreateModule({
+        Name = "SpeedAura",
+        Function = function(callback)
+            local connection
+            if callback then
+                connection = game:GetService("RunService").Heartbeat:Connect(function()
+                    for _, plr in pairs(game:GetService("Players"):GetPlayers()) do
+                        if plr ~= game.Players.LocalPlayer and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+                            local dist = (plr.Character.HumanoidRootPart.Position - game.Players.LocalPlayer.Character.HumanoidRootPart.Position).magnitude
+                            if dist < 15 then
+                                local tool = game.Players.LocalPlayer.Character:FindFirstChildOfClass("Tool")
+                                if tool then
+                                    tool:Activate()
+                                end
+                            end
+                        end
+                    end
+                end)
+            else
+                if connection then connection:Disconnect() end
+            end
+        end,
+        Tooltip = "MultiAura Rage"
+    })
+end)
+
+run(function()
+    local ToolDropAura = vape.Categories.Exploit:CreateModule({
+        Name = "inventoryBreaker",
+        Function = function(callback)
+            local loop
+            if callback then
+                loop = game:GetService("RunService").Heartbeat:Connect(function()
+                    for _, plr in pairs(game.Players:GetPlayers()) do
+                        if plr ~= game.Players.LocalPlayer and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+                            local tools = plr.Backpack:GetChildren()
+                            for _, tool in pairs(tools) do
+                                if tool:IsA("Tool") then
+                                    tool:Destroy()
+                                end
+                            end
+                        end
+                    end
+                end)
+            else
+                if loop then loop:Disconnect() end
+            end
+        end,
+        Tooltip = "Destroys other players tools in range "
+    })
+end)
+
+run(function()
+    local KillAll = vape.Categories.Serverside:CreateModule({
+        Name = "DestroyPlayers",
+        Function = function(callback)
+            if callback then
+                for _, plr in pairs(game.Players:GetPlayers()) do
+                    if plr ~= game.Players.LocalPlayer and plr.Character and plr.Character:FindFirstChild("Humanoid") then
+                        plr.Character.Humanoid.Health = 0
+                    end
+                end
+                vape:CreateNotification("KillBind", "Everyone killed", 3)
+            end
+        end,
+        Tooltip = "Kills Everyone"
+    })
+end)
+
+run(function()
+    local FakeCrash = vape.Categories.Utility:CreateModule({
+        Name = "FakeCrash",
+        Function = function(callback)
+            if callback then
+                local char = game.Players.LocalPlayer.Character
+                if char and char:FindFirstChild("HumanoidRootPart") then
+                    char.HumanoidRootPart.Anchored = true
+                    vape:CreateNotification("FakeCrash", "You're frozen", 4)
+                    game.StarterGui:SetCore("ChatMakeSystemMessage", {
+                        Text = "[CLIENT TIMEOUT]: connection lost",
+                        Color = Color3.new(1, 0, 0)
+                    })
+                end
+            end
+        end,
+        Tooltip = "Freezes you and fakes a disconnect crash"
+    })
+end)
+
+run(function()
+    local LagModule = vape.Categories.Utility:CreateModule({
+        Name = "LagSwitch",
+        Function = function(callback)
+            if callback then
+                setfpscap(5)
+                setnetworkminingsleep(999999)
+                vape:CreateNotification("LagSwitch", "Enabled (Z)", 4)
+            else
+                setfpscap(240)
+                setnetworkminingsleep(0)
+                vape:CreateNotification("LagSwitch", "Disabled", 4)
+            end
+        end,
+        Tooltip = "Simulates lag"
+    })
+end)
+
 run(function()
 	local Freecam
 	local Value
