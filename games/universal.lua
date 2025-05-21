@@ -6539,7 +6539,6 @@ run(function()
         end,
         Tooltip = "Scans for backdoors"
     })
-end)
 
 run(function()
 	local Freecam
