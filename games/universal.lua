@@ -6454,6 +6454,54 @@ run(function()
 		Tooltip = 'Lets you stay ingame without getting kicked'
 	})
 end)
+
+run(function()
+    local InstantTransAura
+    local oldrealremote
+
+    InstantTransAura = vape.Categories.Utility:CreateModule({
+        Name = 'InstantTransAura',
+        Function = function(callback)
+            if callback then
+                -- Save the original function to restore later
+                oldrealremote = bedwars.ClientConstructor.Function.new
+                bedwars.ClientConstructor.Function.new = function(self, ind, ...)
+                    local res = oldrealremote(self, ind, ...)
+                    local oldRemote = res.instance
+
+                    if oldRemote and oldRemote.Name == remotes.FireProjectile then
+                        res.instance = {
+                            InvokeServer = function(...)
+                                -- Custom behavior to teleport behind players or projectiles
+                                local player = game.Players.LocalPlayer
+                                local range = 10
+                                local auraPart = player.Character.HumanoidRootPart
+
+                                for _, otherPlayer in pairs(game.Players:GetChildren()) do
+                                    if otherPlayer ~= player and otherPlayer.Character then
+                                        local distance = (otherPlayer.Character.HumanoidRootPart.Position - auraPart.Position).Magnitude
+                                        if distance < range then
+                                            -- Teleport behind the player
+                                            local direction = (auraPart.Position - otherPlayer.Character.HumanoidRootPart.Position).unit
+                                            player.Character:SetPrimaryPartCFrame(CFrame.new(otherPlayer.Character.HumanoidRootPart.Position) + direction * -3)
+                                        end
+                                    end
+                                end
+                                return oldRemote:InvokeServer(select(2, ...))
+                            end
+                        }
+                    end
+
+                    return res
+                end
+            else
+                bedwars.ClientConstructor.Function.new = oldrealremote
+                oldrealremote = nil
+            end
+        end,
+        Tooltip = 'Teleports behind players or projectiles.'
+    })
+end)
 	
 run(function()
 	local Freecam
