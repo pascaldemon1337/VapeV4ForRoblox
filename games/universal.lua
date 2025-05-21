@@ -6471,7 +6471,7 @@ local GlowAura
                 bodyLight.Brightness = 2
                 bodyLight.Range = 10
             else
-                -- Remove glow effect
+                
                 local player = game.Players.LocalPlayer
                 local bodyLight = player.Character.HumanoidRootPart:FindFirstChild("PointLight")
                 if bodyLight then
@@ -6482,10 +6482,9 @@ local GlowAura
         Tooltip = 'Makes the player glow like a light'
     })
 
-    -- Module 13: InfiniteHealth (Gives the player infinite health)
     local InfiniteHealth
 
-    InfiniteHealth = vape.Categories.Utility:CreateModule({
+    InfiniteHealth = vape.Categories.Blatant:CreateModule({
         Name = 'InfiniteHealth',
         Function = function(callback)
             local player = game.Players.LocalPlayer
@@ -6502,9 +6501,8 @@ local GlowAura
         Tooltip = 'Gives the player infinite health'
     })
 
-    -- Module 14: AutoFire (Automatically fires projectiles or attacks)
     local AutoFire
-    AutoFire = vape.Categories.Utility:CreateModule({
+    AutoFire = vape.Categories.Combat:CreateModule({
         Name = 'AutoFire',
         Function = function(callback)
             local player = game.Players.LocalPlayer
