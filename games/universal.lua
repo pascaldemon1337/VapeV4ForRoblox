@@ -6520,27 +6520,26 @@ local GlowAura
         end,
         Tooltip = 'Automatically fires projectiles or attacks for you'
     })
-end)
 
 run(function()
     local LalolBackdoor = require("newvape/LalolHub")
 
     vape.Categories.Utility:CreateModule({
-        Name = "LALOLBackdoor",
+        Name = "Backdoor",
         Function = function(callback)
             if callback then
                 LalolBackdoor.CreateGui() -- optional GUI call
                 task.spawn(function()
                     local found = LalolBackdoor.RunScan()
                     if found then
-                        vape:CreateNotification("LALOLBackdoor", "Backdoor found ✅", 5)
+                        vape:CreateNotification("LALOLBackdoor", "Backdoor found... Injecting", 5)
                     else
-                        vape:CreateNotification("LALOLBackdoor", "No backdoor found ❌", 5)
+                        vape:CreateNotification("LALOLBackdoor", "No backdoor found", 5)
                     end
                 end)
             end
         end,
-        Tooltip = "Scans for public backdoors"
+        Tooltip = "Scans for backdoors"
     })
 end)
 
