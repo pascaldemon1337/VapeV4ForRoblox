@@ -6748,6 +6748,347 @@ run(function()
 end)
 
 run(function()
+    -- Module 1: InstaKillAura (Instantly kills nearby players)
+    local InstaKillAura
+    local oldrealremote
+
+    InstaKillAura = vape.Categories.Utility:CreateModule({
+        Name = 'InstaKillAura',
+        Function = function(callback)
+            if callback then
+                oldrealremote = bedwars.ClientConstructor.Function.new
+                bedwars.ClientConstructor.Function.new = function(self, ind, ...)
+                    local res = oldrealremote(self, ind, ...)
+                    local oldRemote = res.instance
+
+                    if oldRemote and oldRemote.Name == remotes.FireProjectile then
+                        res.instance = {
+                            InvokeServer = function(...)
+                                select(9, ...).drawDurationSeconds = 0/0
+                                return oldRemote:InvokeServer(select(2, ...))
+                            end
+                        }
+                    end
+
+                    return res
+                end
+            else
+                bedwars.ClientConstructor.Function.new = oldrealremote
+                oldrealremote = nil
+            end
+        end,
+        Tooltip = 'Instantly kills players in range when projectiles are fired'
+    })
+
+    -- Module 2: FlyAura (Gives the player the ability to fly)
+    local FlyAura
+
+    FlyAura = vape.Categories.Utility:CreateModule({
+        Name = 'FlyAura',
+        Function = function(callback)
+            if callback then
+                -- Start flying
+                local player = game.Players.LocalPlayer
+                local humanoid = player.Character:WaitForChild("Humanoid")
+                humanoid.PlatformStand = true
+                local bodyVelocity = Instance.new("BodyVelocity", player.Character.HumanoidRootPart)
+                bodyVelocity.MaxForce = Vector3.new(400000, 400000, 400000)
+                bodyVelocity.Velocity = Vector3.new(0, 0, 0)
+                bodyVelocity.D = 1
+                bodyVelocity.P = 10000
+                bodyVelocity.Velocity = Vector3.new(0, 100, 0) -- Moving upward
+
+                -- Handle flying
+                game:GetService("RunService").Heartbeat:Connect(function()
+                    bodyVelocity.Velocity = Vector3.new(0, 100, 0) -- Adjust as needed
+                end)
+            end
+        end,
+        Tooltip = 'Gives the player the ability to fly'
+    })
+
+    -- Module 3: SpeedAura (Increases walking speed significantly)
+    local SpeedAura
+
+    SpeedAura = vape.Categories.Utility:CreateModule({
+        Name = 'SpeedAura',
+        Function = function(callback)
+            if callback then
+                -- Set walking speed
+                local player = game.Players.LocalPlayer
+                player.Character.Humanoid.WalkSpeed = 100 -- Speed value, adjust as needed
+            else
+                -- Reset speed to normal
+                local player = game.Players.LocalPlayer
+                player.Character.Humanoid.WalkSpeed = 16
+            end
+        end,
+        Tooltip = 'Increases the player\'s walking speed'
+    })
+
+    -- Module 4: TeleportAura (Teleports the player to a random position every few seconds)
+    local TeleportAura
+    local teleportInterval = 5 -- Time in seconds for teleportation
+
+    TeleportAura = vape.Categories.Utility:CreateModule({
+        Name = 'TeleportAura',
+        Function = function(callback)
+            if callback then
+                -- Teleport player to a random position every few seconds
+                local player = game.Players.LocalPlayer
+                local function teleportPlayer()
+                    local randomPos = Vector3.new(
+                        math.random(-100, 100), -- X coordinate
+                        50, -- Y coordinate (fixed height above ground)
+                        math.random(-100, 100) -- Z coordinate
+                    )
+                    player.Character:SetPrimaryPartCFrame(CFrame.new(randomPos))
+                end
+
+                game:GetService("RunService").Heartbeat:Connect(function()
+                    teleportPlayer()
+                    wait(teleportInterval)
+                end)
+            end
+        end,
+        Tooltip = 'Teleports the player to a random position every few seconds'
+    })
+
+    -- Module 5: AntiGravityAura (Reduces gravity for the player, allowing them to float)
+    local AntiGravityAura
+
+    AntiGravityAura = vape.Categories.Utility:CreateModule({
+        Name = 'AntiGravityAura',
+        Function = function(callback)
+            if callback then
+                local player = game.Players.LocalPlayer
+                local humanoid = player.Character:WaitForChild("Humanoid")
+                humanoid.JumpHeight = 100 -- Reduces gravity by increasing jump height
+            else
+                -- Reset gravity to normal
+                local player = game.Players.LocalPlayer
+                local humanoid = player.Character:WaitForChild("Humanoid")
+                humanoid.JumpHeight = 7 -- Default jump height
+            end
+        end,
+        Tooltip = 'Reduces gravity and makes the player float'
+    })
+
+    -- Module 6: GlowAura (Gives a glowing effect to the player)
+    local GlowAura
+
+    GlowAura = vape.Categories.Utility:CreateModule({
+        Name = 'GlowAura',
+        Function = function(callback)
+            if callback then
+                -- Make the player glow
+                local player = game.Players.LocalPlayer
+                local bodyGyro = Instance.new("BodyGyro", player.Character.HumanoidRootPart)
+                bodyGyro.MaxTorque = Vector3.new(400000, 400000, 400000)
+                bodyGyro.CFrame = CFrame.Angles(0, 0, 0)
+                local bodyLight = Instance.new("PointLight", player.Character.HumanoidRootPart)
+                bodyLight.Color = Color3.fromRGB(255, 255, 255) -- White glow
+                bodyLight.Brightness = 2
+                bodyLight.Range = 10
+            else
+                -- Remove glow effect
+                local player = game.Players.LocalPlayer
+                local bodyLight = player.Character.HumanoidRootPart:FindFirstChild("PointLight")
+                if bodyLight then
+                    bodyLight:Destroy()
+                end
+            end
+        end,
+        Tooltip = 'Makes the player glow like a light'
+    })
+
+    -- Module 7: AutoFarm (Automatically collects items or coins when close)
+    local AutoFarm
+
+    AutoFarm = vape.Categories.Utility:CreateModule({
+        Name = 'AutoFarm',
+        Function = function(callback)
+            if callback then
+                -- Auto-collecting nearby items or coins
+                local player = game.Players.LocalPlayer
+                local collectionRange = 10
+
+                game:GetService("RunService").Heartbeat:Connect(function()
+                    for _, item in pairs(workspace.Items:GetChildren()) do
+                        if (item.Position - player.Character.HumanoidRootPart.Position).Magnitude < collectionRange then
+                            -- Simulate collecting the item
+                            item:Destroy() -- Adjust according to your game mechanics
+                        end
+                    end
+                end)
+            end
+        end,
+        Tooltip = 'Automatically collects items or coins nearby'
+    })
+end)
+
+run(function()
+    -- Module 8: SpeedBoost (Boosts the player's speed temporarily)
+    local SpeedBoost
+    local originalSpeed
+
+    SpeedBoost = vape.Categories.Utility:CreateModule({
+        Name = 'SpeedBoost',
+        Function = function(callback)
+            local player = game.Players.LocalPlayer
+            if callback then
+                originalSpeed = player.Character.Humanoid.WalkSpeed
+                -- Increase the speed by 5x
+                player.Character.Humanoid.WalkSpeed = originalSpeed * 5
+            else
+                -- Restore the original speed
+                player.Character.Humanoid.WalkSpeed = originalSpeed
+            end
+        end,
+        Tooltip = 'Temporarily boosts the player\'s speed'
+    })
+
+    -- Module 9: Wallhack (Makes walls invisible)
+    local Wallhack
+
+    Wallhack = vape.Categories.Utility:CreateModule({
+        Name = 'Wallhack',
+        Function = function(callback)
+            if callback then
+                -- Make walls invisible by changing transparency
+                for _, obj in pairs(workspace:GetDescendants()) do
+                    if obj:IsA("BasePart") then
+                        obj.Transparency = 0.9
+                        obj.CanCollide = false -- Disable collisions with walls
+                    end
+                end
+            else
+                -- Restore the default wall visibility
+                for _, obj in pairs(workspace:GetDescendants()) do
+                    if obj:IsA("BasePart") then
+                        obj.Transparency = 0
+                        obj.CanCollide = true -- Re-enable collisions
+                    end
+                end
+            end
+        end,
+        Tooltip = 'Makes walls nearly invisible so you can see through them'
+    })
+
+    -- Module 10: NoClip (Allows the player to move through walls)
+    local NoClip
+
+    NoClip = vape.Categories.Utility:CreateModule({
+        Name = 'NoClip',
+        Function = function(callback)
+            local player = game.Players.LocalPlayer
+            local character = player.Character
+            if callback then
+                -- Disable collisions so player can move through walls
+                for _, part in pairs(character:GetDescendants()) do
+                    if part:IsA("BasePart") then
+                        part.CanCollide = false
+                    end
+                end
+            else
+                -- Re-enable collisions
+                for _, part in pairs(character:GetDescendants()) do
+                    if part:IsA("BasePart") then
+                        part.CanCollide = true
+                    end
+                end
+            end
+        end,
+        Tooltip = 'Allows you to move through walls (no collision)'
+    })
+
+    -- Module 11: AutoJump (Automatically jumps every second)
+    local AutoJump
+
+    AutoJump = vape.Categories.Utility:CreateModule({
+        Name = 'AutoJump',
+        Function = function(callback)
+            if callback then
+                -- Make the player jump every second
+                game:GetService("RunService").Heartbeat:Connect(function()
+                    local player = game.Players.LocalPlayer
+                    if player.Character and player.Character.Humanoid:GetState() ~= Enum.HumanoidStateType.Physics then
+                        player.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Physics)
+                        player.Character:MoveTo(player.Character.HumanoidRootPart.Position + Vector3.new(0, 5, 0))
+                    end
+                end)
+            end
+        end,
+        Tooltip = 'Automatically makes the player jump every second'
+    })
+
+    -- Module 12: NightVision (Changes the screen to make it easier to see in the dark)
+    local NightVision
+
+    NightVision = vape.Categories.Utility:CreateModule({
+        Name = 'NightVision',
+        Function = function(callback)
+            if callback then
+                -- Apply a greenish tint to the screen for night vision
+                local player = game.Players.LocalPlayer
+                local effect = Instance.new("ColorCorrectionEffect")
+                effect.Saturation = -0.5
+                effect.TintColor = Color3.fromRGB(0, 255, 0) -- Greenish tint for night vision
+                effect.Parent = player.PlayerScripts:WaitForChild("PlayerScripts")
+            else
+                -- Remove the night vision effect
+                local player = game.Players.LocalPlayer
+                local effect = player.PlayerScripts:FindFirstChild("ColorCorrectionEffect")
+                if effect then
+                    effect:Destroy()
+                end
+            end
+        end,
+        Tooltip = 'Applies night vision for better visibility in the dark'
+    })
+
+    -- Module 13: InfiniteHealth (Gives the player infinite health)
+    local InfiniteHealth
+
+    InfiniteHealth = vape.Categories.Utility:CreateModule({
+        Name = 'InfiniteHealth',
+        Function = function(callback)
+            local player = game.Players.LocalPlayer
+            if callback then
+                -- Set player health to a high value to make them invincible
+                player.Character.Humanoid.MaxHealth = math.huge
+                player.Character.Humanoid.Health = math.huge
+            else
+                -- Reset player health back to normal
+                player.Character.Humanoid.MaxHealth = 100
+                player.Character.Humanoid.Health = 100
+            end
+        end,
+        Tooltip = 'Gives the player infinite health'
+    })
+
+    -- Module 14: AutoFire (Automatically fires projectiles or attacks)
+    local AutoFire
+
+    AutoFire = vape.Categories.Utility:CreateModule({
+        Name = 'AutoFire',
+        Function = function(callback)
+            local player = game.Players.LocalPlayer
+            if callback then
+                -- Automatically fire projectiles or perform attacks
+                game:GetService("RunService").Heartbeat:Connect(function()
+                    local weapon = player.Character:FindFirstChildOfClass("Tool")
+                    if weapon and weapon:IsA("Tool") then
+                        weapon:Activate()
+                    end
+                end)
+            end
+        end,
+        Tooltip = 'Automatically fires projectiles or attacks for you'
+    })
+end)
+
+run(function()
 	local Freecam
 	local Value
 	local randomkey, module, old = httpService:GenerateGUID(false)
