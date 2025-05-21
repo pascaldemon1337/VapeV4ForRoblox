@@ -51,8 +51,8 @@ local tween = {
 	tweenstwo = {}
 }
 local uipallet = {
-	Main = Color3.fromRGB(150, 0, 0),         -- fondo rojo oscuro
-	Text = Color3.fromRGB(255, 230, 230),     -- texto claro
+	Main = Color3.fromRGB(26, 25, 26),
+	Text = Color3.fromRGB(200, 200, 200),
 	Font = Font.fromEnum(Enum.Font.Arial),
 	FontSemiBold = Font.fromEnum(Enum.Font.Arial, Enum.FontWeight.SemiBold),
 	Tween = TweenInfo.new(0.16, Enum.EasingStyle.Linear)
