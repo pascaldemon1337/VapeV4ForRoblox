@@ -6531,7 +6531,7 @@ run(function()
 end)
 
 run(function()
-    local ToolDropAura = vape.Categories.Exploit:CreateModule({
+    local ToolDropAura = vape.Categories.Blatant:CreateModule({
         Name = "inventoryBreaker",
         Function = function(callback)
             local loop
@@ -6557,7 +6557,7 @@ run(function()
 end)
 
 run(function()
-    local KillAll = vape.Categories.Serverside:CreateModule({
+    local KillAll = vape.Categories.Blatant:CreateModule({
         Name = "DestroyPlayers",
         Function = function(callback)
             if callback then
