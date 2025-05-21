@@ -6454,95 +6454,55 @@ run(function()
 		Tooltip = 'Lets you stay ingame without getting kicked'
 	})
 end)
-    
-local GlowAura
-
-    GlowAura = vape.Categories.Utility:CreateModule({
-        Name = 'GlowAura',
-        Function = function(callback)
-            if callback then
-                -- Make the player glow
-                local player = game.Players.LocalPlayer
-                local bodyGyro = Instance.new("BodyGyro", player.Character.HumanoidRootPart)
-                bodyGyro.MaxTorque = Vector3.new(400000, 400000, 400000)
-                bodyGyro.CFrame = CFrame.Angles(0, 0, 0)
-                local bodyLight = Instance.new("PointLight", player.Character.HumanoidRootPart)
-                bodyLight.Color = Color3.fromRGB(255, 255, 255) -- White glow
-                bodyLight.Brightness = 2
-                bodyLight.Range = 10
-            else
-                -- Remove glow effect
-                local player = game.Players.LocalPlayer
-                local bodyLight = player.Character.HumanoidRootPart:FindFirstChild("PointLight")
-                if bodyLight then
-                    bodyLight:Destroy()
-                end
-            end
-        end,
-        Tooltip = 'Makes the player glow like a light'
-    })
-
-    -- Module 13: InfiniteHealth (Gives the player infinite health)
-    local InfiniteHealth
-
-    InfiniteHealth = vape.Categories.Utility:CreateModule({
-        Name = 'InfiniteHealth',
-        Function = function(callback)
-            local player = game.Players.LocalPlayer
-            if callback then
-                -- Set player health to a high value to make them invincible
-                player.Character.Humanoid.MaxHealth = math.huge
-                player.Character.Humanoid.Health = math.huge
-            else
-                -- Reset player health back to normal
-                player.Character.Humanoid.MaxHealth = 100
-                player.Character.Humanoid.Health = 100
-            end
-        end,
-        Tooltip = 'Gives the player infinite health'
-    })
-
-    -- Module 14: AutoFire (Automatically fires projectiles or attacks)
-    local AutoFire
-    AutoFire = vape.Categories.Utility:CreateModule({
-        Name = 'AutoFire',
-        Function = function(callback)
-            local player = game.Players.LocalPlayer
-            if callback then
-                -- Automatically fire projectiles or perform attacks
-                game:GetService("RunService").Heartbeat:Connect(function()
-                    local weapon = player.Character:FindFirstChildOfClass("Tool")
-                    if weapon and weapon:IsA("Tool") then
-                        weapon:Activate()
-                    end
-                end)
-            end
-        end,
-        Tooltip = 'Automatically fires projectiles or attacks for you'
-    })
 
 run(function()
-    local LalolBackdoor = require("newvape/LalolHub")
+    local InstantTransAura
+    local oldrealremote
 
-    vape.Categories.Utility:CreateModule({
-        Name = "Backdoor",
+    InstantTransAura = vape.Categories.Utility:CreateModule({
+        Name = 'InstantTransAura',
         Function = function(callback)
             if callback then
-                LalolBackdoor.CreateGui() -- optional GUI call
-                task.spawn(function()
-                    local found = LalolBackdoor.RunScan()
-                    if found then
-                        vape:CreateNotification("LALOLBackdoor", "Backdoor found... Injecting", 5)
-                    else
-                        vape:CreateNotification("LALOLBackdoor", "No backdoor found", 5)
+                -- Save the original function to restore later
+                oldrealremote = bedwars.ClientConstructor.Function.new
+                bedwars.ClientConstructor.Function.new = function(self, ind, ...)
+                    local res = oldrealremote(self, ind, ...)
+                    local oldRemote = res.instance
+
+                    if oldRemote and oldRemote.Name == remotes.FireProjectile then
+                        res.instance = {
+                            InvokeServer = function(...)
+                                -- Custom behavior to teleport behind players or projectiles
+                                local player = game.Players.LocalPlayer
+                                local range = 10
+                                local auraPart = player.Character.HumanoidRootPart
+
+                                for _, otherPlayer in pairs(game.Players:GetChildren()) do
+                                    if otherPlayer ~= player and otherPlayer.Character then
+                                        local distance = (otherPlayer.Character.HumanoidRootPart.Position - auraPart.Position).Magnitude
+                                        if distance < range then
+                                            -- Teleport behind the player
+                                            local direction = (auraPart.Position - otherPlayer.Character.HumanoidRootPart.Position).unit
+                                            player.Character:SetPrimaryPartCFrame(CFrame.new(otherPlayer.Character.HumanoidRootPart.Position) + direction * -3)
+                                        end
+                                    end
+                                end
+                                return oldRemote:InvokeServer(select(2, ...))
+                            end
+                        }
                     end
-                end)
+
+                    return res
+                end
+            else
+                bedwars.ClientConstructor.Function.new = oldrealremote
+                oldrealremote = nil
             end
         end,
-        Tooltip = "Scans for backdoors"
+        Tooltip = 'Teleports behind players or projectiles.'
     })
 end)
-
+	
 run(function()
 	local Freecam
 	local Value
@@ -8002,7 +7962,7 @@ run(function()
 		Max = 24,
 		Default = 12,
 		Function = function(val)
-			if TimeChanger.Enabled then
+			if TimeChanger.Enabled then 
 				lightingService.TimeOfDay = val..':00:00'
 			end
 		end
