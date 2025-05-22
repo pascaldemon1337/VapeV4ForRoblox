@@ -6454,8 +6454,6 @@ run(function()
 		Tooltip = 'Lets you stay ingame without getting kicked'
 	})
 
-run(function()
-
 InstantTransAura = vape.Categories.Blatant:CreateModule({
     Name = 'InstantTransAura',
     Function = function(callback)
@@ -6489,7 +6487,7 @@ InstantTransAura = vape.Categories.Blatant:CreateModule({
         end
     end,
     Tooltip = 'Teleports behind nearby players within range.'
-})
+end)
 	
 run(function()
     local SpeedAura = vape.Categories.Blatant:CreateModule({
