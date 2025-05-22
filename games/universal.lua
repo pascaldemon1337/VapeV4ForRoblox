@@ -7021,7 +7021,7 @@ local LocalPlayer = Players.LocalPlayer
 local Humanoid = LocalPlayer.Character and LocalPlayer.Character:WaitForChild("Humanoid")
 
 vape.Categories.Blatant:CreateModule({
-	Name = "SpeedScanBypass",
+	Name = "SpeedCheckBypass",
 	Function = function(callback)
 		local conn
 		if callback then
