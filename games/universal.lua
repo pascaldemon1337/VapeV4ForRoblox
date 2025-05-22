@@ -6519,7 +6519,7 @@ local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
-vape.Categories.Stealth:CreateModule({
+vape.Categories.World:CreateModule({
     Name = "FakeWalkDesync",
     Function = function(callback)
         local conn
