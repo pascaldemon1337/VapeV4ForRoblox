@@ -6496,7 +6496,84 @@ local Players = game:GetService("Players")
 	})
 
 end) 
-	
+
+local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
+local LocalPlayer = Players.LocalPlayer
+
+vape.Categories.World:CreateModule({
+    Name = "TPToBall",
+    Function = function(callback)
+        if callback then
+            task.spawn(function()
+                repeat task.wait() until LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                local character = LocalPlayer.Character
+                local hrp = character:FindFirstChild("HumanoidRootPart")
+
+                local temp = Workspace:FindFirstChild("Temp")
+                local ball = temp and temp:FindFirstChild("Ball")
+
+                if hrp and ball then
+                    hrp.CFrame = ball.CFrame + Vector3.new(0, 5, 0)
+                else
+                    warn("TPToBall: Failed to find HRP or Ball.")
+                end
+            end)
+        end
+    end,
+    Tooltip = "Teleports you to the Ball once when enabled"
+})
+
+local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
+local LocalPlayer = Players.LocalPlayer
+
+vape.Categories.World:CreateModule({
+    Name = "TPToBall",
+    Function = function(callback)
+        if callback then
+            task.spawn(function()
+                repeat task.wait() until LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                local character = LocalPlayer.Character
+                local hrp = character:FindFirstChild("HumanoidRootPart")
+
+                local temp = Workspace:FindFirstChild("Temp")
+                local ball = temp and temp:FindFirstChild("Ball")
+
+                if hrp and ball then
+                    hrp.CFrame = ball.CFrame + Vector3.new(0, 5, 0)
+                else
+                    warn("TPToBall: Failed to find HRP or Ball.")
+                end
+            end)
+        end
+    end,
+    Tooltip = "Teleports you to the Ball once when enabled"
+})
+						
+local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
+local LocalPlayer = Players.LocalPlayer
+
+vape.Categories.World:CreateModule({
+    Name = "BringBall",
+    Function = function(callback)
+        if callback then
+            local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+            local hrp = character:WaitForChild("HumanoidRootPart", 5)
+            local ball = Workspace:FindFirstChild("Temp") and Workspace.Temp:FindFirstChild("Ball")
+
+            if hrp and ball then
+                ball.CFrame = hrp.CFrame + Vector3.new(0, 5, 0)
+            else
+                warn("BringBall: HRP or Ball not found.")
+            end
+        end
+    end,
+    Tooltip = "Teleports the Ball to your position"
+})
+					
+					
 run(function()
     local SpeedAura = vape.Categories.Blatant:CreateModule({
         Name = "SpeedAura",
