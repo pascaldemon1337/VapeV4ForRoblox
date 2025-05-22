@@ -7150,7 +7150,7 @@ local originalNamecall = mt.__namecall
 
 local hookActive = false
 
-vape.Categories.Exploit:CreateModule({
+vape.Categories.Blatant:CreateModule({
     Name = "AutoDisableServerDetector",
     Function = function(callback)
         if callback and not hookActive then
