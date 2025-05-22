@@ -6487,7 +6487,7 @@ InstantTransAura = vape.Categories.Blatant:CreateModule({
         end
     end,
     Tooltip = 'Teleports behind nearby players within range.'
-end)
+	})
 	
 run(function()
     local SpeedAura = vape.Categories.Blatant:CreateModule({
