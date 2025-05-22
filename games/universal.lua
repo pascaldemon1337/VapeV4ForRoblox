@@ -6456,12 +6456,6 @@ run(function()
 end)
 
 run(function()
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-
-local InstantTransAura
-local Connection
-local Active = false
 
 InstantTransAura = vape.Categories.Blatant:CreateModule({
     Name = 'InstantTransAura',
