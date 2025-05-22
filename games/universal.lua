@@ -6454,16 +6454,22 @@ run(function()
 		Tooltip = 'Lets you stay ingame without getting kicked'
 	})
 
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
+
+local InstantTransAura
+local Connection
+
 InstantTransAura = vape.Categories.Blatant:CreateModule({
     Name = 'InstantTransAura',
     Function = function(callback)
-        Active = callback
-
         if callback then
-            Connection = game:GetService("RunService").Heartbeat:Connect(function()
-                if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then return end
+            Connection = RunService.Heartbeat:Connect(function()
+                local character = LocalPlayer.Character
+                if not character or not character:FindFirstChild("HumanoidRootPart") then return end
 
-                local hrp = LocalPlayer.Character.HumanoidRootPart
+                local hrp = character.HumanoidRootPart
                 local range = 10
 
                 for _, otherPlayer in pairs(Players:GetPlayers()) do
@@ -6474,7 +6480,7 @@ InstantTransAura = vape.Categories.Blatant:CreateModule({
                         if distance <= range then
                             local direction = (hrp.Position - otherHRP.Position).Unit
                             hrp.CFrame = CFrame.new(otherHRP.Position + direction * -3)
-                            break -- Teleport once per frame
+                            break -- Only teleport to one player per frame
                         end
                     end
                 end
@@ -6487,7 +6493,7 @@ InstantTransAura = vape.Categories.Blatant:CreateModule({
         end
     end,
     Tooltip = 'Teleports behind nearby players within range.'
-	})
+})
 	
 run(function()
     local SpeedAura = vape.Categories.Blatant:CreateModule({
