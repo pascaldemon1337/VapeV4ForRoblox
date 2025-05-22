@@ -6455,45 +6455,47 @@ run(function()
 	})
 
 local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local LocalPlayer = Players.LocalPlayer
+	local RunService = game:GetService("RunService")
+	local LocalPlayer = Players.LocalPlayer
 
-local InstantTransAura
-local Connection
+	local InstantTransAura
+	local Connection
 
-InstantTransAura = vape.Categories.Blatant:CreateModule({
-    Name = 'InstantTransAura',
-    Function = function(callback)
-        if callback then
-            Connection = RunService.Heartbeat:Connect(function()
-                local character = LocalPlayer.Character
-                if not character or not character:FindFirstChild("HumanoidRootPart") then return end
+	InstantTransAura = vape.Categories.Blatant:CreateModule({
+		Name = 'InstantTransAura',
+		Function = function(callback)
+			if callback then
+				Connection = RunService.Heartbeat:Connect(function()
+					local character = LocalPlayer.Character
+					if not character or not character:FindFirstChild("HumanoidRootPart") then return end
 
-                local hrp = character.HumanoidRootPart
-                local range = 10
+					local hrp = character.HumanoidRootPart
+					local range = 10
 
-                for _, otherPlayer in pairs(Players:GetPlayers()) do
-                    if otherPlayer ~= LocalPlayer and otherPlayer.Character and otherPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                        local otherHRP = otherPlayer.Character.HumanoidRootPart
-                        local distance = (hrp.Position - otherHRP.Position).Magnitude
+					for _, otherPlayer in pairs(Players:GetPlayers()) do
+						if otherPlayer ~= LocalPlayer and otherPlayer.Character and otherPlayer.Character:FindFirstChild("HumanoidRootPart") then
+							local otherHRP = otherPlayer.Character.HumanoidRootPart
+							local distance = (hrp.Position - otherHRP.Position).Magnitude
 
-                        if distance <= range then
-                            local direction = (hrp.Position - otherHRP.Position).Unit
-                            hrp.CFrame = CFrame.new(otherHRP.Position + direction * -3)
-                            break -- Only teleport to one player per frame
-                        end
-                    end
-                end
-            end)
-        else
-            if Connection then
-                Connection:Disconnect()
-                Connection = nil
-            end
-        end
-    end,
-    Tooltip = 'Teleports behind nearby players within range.'
-})
+							if distance <= range then
+								local direction = (hrp.Position - otherHRP.Position).Unit
+								hrp.CFrame = CFrame.new(otherHRP.Position + direction * -3)
+								break
+							end
+						end
+					end
+				end)
+			else
+				if Connection then
+					Connection:Disconnect()
+					Connection = nil
+				end
+			end
+		end,
+		Tooltip = 'Teleports behind nearby players within range.'
+	})
+
+end) 
 	
 run(function()
     local SpeedAura = vape.Categories.Blatant:CreateModule({
