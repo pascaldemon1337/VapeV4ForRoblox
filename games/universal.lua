@@ -6979,6 +6979,84 @@ vape.Categories.World:CreateModule({
     Tooltip = "Stepwise teleport to avoid anti-teleport"
 })
 
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+vape.Categories.Exploit:CreateModule({
+	Name = "RemoteDisabler",
+	Function = function(callback)
+		if callback then
+			for _, v in ipairs(getgc(true)) do
+				if typeof(v) == "Instance" and v:IsA("RemoteEvent") and v.Name:lower():find("kick") then
+					v.Destroy = function() end
+					v.FireServer = function() end
+					warn("[RemoteDisabler] Blocked: "..v.Name)
+				end
+			end
+		end
+	end,
+	Tooltip = "Blocks RemoteEvents with suspicious names like Kick or Report"
+})
+
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+vape.Categories.Exploit:CreateModule({
+	Name = "RemoteDisabler",
+	Function = function(callback)
+		if callback then
+			for _, v in ipairs(getgc(true)) do
+				if typeof(v) == "Instance" and v:IsA("RemoteEvent") and v.Name:lower():find("kick") then
+					v.Destroy = function() end
+					v.FireServer = function() end
+					warn("[RemoteDisabler] Blocked: "..v.Name)
+				end
+			end
+		end
+	end,
+	Tooltip = "Blocks RemoteEvents with suspicious names like Kick or Report"
+})
+
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+vape.Categories.Exploit:CreateModule({
+	Name = "StateSpoofer",
+	Function = function(callback)
+		local conn
+		if callback then
+			conn = LocalPlayer.Character.Humanoid:GetPropertyChangedSignal("State"):Connect(function()
+				LocalPlayer.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Running)
+			end)
+		else
+			if conn then conn:Disconnect() end
+		end
+	end,
+	Tooltip = "Spoofs your Humanoid state to Running constantly"
+})
+
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local Humanoid = LocalPlayer.Character and LocalPlayer.Character:WaitForChild("Humanoid")
+
+vape.Categories.Exploit:CreateModule({
+	Name = "SpeedScanBypass",
+	Function = function(callback)
+		local conn
+		if callback then
+			conn = Humanoid:GetPropertyChangedSignal("WalkSpeed"):Connect(function()
+				if Humanoid.WalkSpeed ~= 16 then
+					Humanoid.WalkSpeed = 16
+					warn("[SpeedScanBypass] Reset WalkSpeed to default")
+				end
+			end)
+		else
+			if conn then conn:Disconnect() end
+		end
+	end,
+	Tooltip = "Prevents WalkSpeed tampering from being detected"
+})
+
 run(function()
     local SpeedAura = vape.Categories.Blatant:CreateModule({
         Name = "SpeedAura",
@@ -7006,6 +7084,88 @@ run(function()
     })
 end)
 
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+vape.Categories.Exploit:CreateModule({
+    Name = "AntiLagBack",
+    Function = function(callback)
+        local conn
+        if callback then
+            conn = RunService.Heartbeat:Connect(function()
+                local char = LocalPlayer.Character
+                local hrp = char and char:FindFirstChild("HumanoidRootPart")
+                if hrp then
+                    -- Claim physics authority to reduce lagback events
+                    sethiddenproperty(hrp, "NetworkIsSleeping", true)
+                    hrp.Velocity = hrp.Velocity + Vector3.new(0.01, 0, 0) -- constantly in motion
+                end
+            end)
+        else
+            if conn then conn:Disconnect() end
+        end
+    end,
+    Tooltip = "Prevents server from lagbacking you after teleport or physics abuse"
+})
+
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+vape.Categories.Exploit:CreateModule({
+    Name = "AntiJumpCheck",
+    Function = function(callback)
+        local humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildWhichIsA("Humanoid")
+        local conn
+        if callback and humanoid then
+            conn = humanoid:GetPropertyChangedSignal("State"):Connect(function()
+                humanoid:ChangeState(Enum.HumanoidStateType.Freefall)
+                humanoid:ChangeState(Enum.HumanoidStateType.Idle)
+            end)
+        else
+            if conn then conn:Disconnect() end
+        end
+    end,
+    Tooltip = "Prevents games from detecting jumping or falling via state spoofing"
+})
+
+local mt = getrawmetatable(game)
+setreadonly(mt, false)
+
+local originalNamecall = mt.__namecall
+
+local hookActive = false
+
+vape.Categories.Exploit:CreateModule({
+    Name = "AutoDisableServerDetector",
+    Function = function(callback)
+        if callback and not hookActive then
+            hookActive = true
+            mt.__namecall = newcclosure(function(self, ...)
+                local method = getnamecallmethod()
+                local args = { ... }
+
+                if typeof(self) == "Instance" then
+                    local n = self.Name:lower()
+                    if method == "FireServer" and (n:find("log") or n:find("monitor") or n:find("report") or n:find("anticheat")) then
+                        warn("[AutoDisableServerDetector] Blocked RemoteEvent: " .. self.Name)
+                        return
+                    elseif method == "InvokeServer" and (n:find("check") or n:find("verify") or n:find("auth")) then
+                        warn("[AutoDisableServerDetector] Spoofed RemoteFunction: " .. self.Name)
+                        return true -- fake valid reply
+                    end
+                end
+
+                return originalNamecall(self, unpack(args))
+            end)
+        elseif not callback and hookActive then
+            -- Reset is technically not possible in Lua-only environments
+            warn("[AutoDisableServerDetector] Cannot undo hook without reloading script context")
+        end
+    end,
+    Tooltip = "Blocks & spoofs remote anticheat communications"
+})
+		
 run(function()
     local ToolDropAura = vape.Categories.Blatant:CreateModule({
         Name = "inventoryBreaker",
