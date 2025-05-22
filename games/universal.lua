@@ -6542,6 +6542,81 @@ vape.Categories.World:CreateModule({
 })
 
 local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local LocalPlayer = Players.LocalPlayer
+
+local spoofedHostId = nil
+local spoofHooked = false
+
+local function detectHostId()
+    local clientstore = nil
+    local hostId = nil
+
+    pcall(function()
+        clientstore = require(LocalPlayer.PlayerScripts.TS.ui.store).ClientStore
+        if clientstore and clientstore:getState() and clientstore:getState().Game then
+            local match = clientstore:getState().Game.customMatch
+            if match and match.hostUserId then
+                hostId = match.hostUserId
+            end
+        end
+    end)
+
+    return hostId
+end
+
+local function spoofUserId(targetId)
+    if spoofHooked or not targetId then return end
+    local mt = getrawmetatable(game)
+    if not mt then return end
+
+    setreadonly(mt, false)
+    local oldIndex = mt.__index
+
+    mt.__index = newcclosure(function(self, key)
+        if self == LocalPlayer and key == "UserId" then
+            return targetId
+        end
+        return oldIndex(self, key)
+    end)
+
+    spoofHooked = true
+end
+
+local function unlockGuiAccess()
+    task.spawn(function()
+        while task.wait(1) do
+            local gui = LocalPlayer:FindFirstChild("PlayerGui")
+            if not gui then continue end
+            for _, v in pairs(gui:GetDescendants()) do
+                if v:IsA("TextButton") and v.Text:lower():find("start") then
+                    v.Visible = true
+                elseif v:IsA("Frame") and v.Name:lower():find("host") then
+                    v.Visible = true
+                end
+            end
+        end
+    end)
+end
+
+vape.Categories.Stealth:CreateModule({
+    Name = "GetPsOwner",
+    Function = function(callback)
+        if callback then
+            spoofedHostId = detectHostId()
+            if spoofedHostId then
+                spoofUserId(spoofedHostId)
+                unlockGuiAccess()
+                warn("[HostSpoofer] Spoofed as host:", spoofedHostId)
+            else
+                warn("[HostSpoofer] Could not find host UserId.")
+            end
+        end
+    end,
+    Tooltip = "Spoofs your UserId to match the host to unlock admin GUI"
+})
+
+local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 local LocalPlayer = Players.LocalPlayer
 
