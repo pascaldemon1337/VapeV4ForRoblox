@@ -6453,7 +6453,6 @@ run(function()
 		end,
 		Tooltip = 'Lets you stay ingame without getting kicked'
 	})
-end)
 
 run(function()
 
