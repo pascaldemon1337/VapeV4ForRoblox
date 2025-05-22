@@ -6982,7 +6982,7 @@ vape.Categories.World:CreateModule({
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
-vape.Categories.Exploit:CreateModule({
+vape.Categories.Utility:CreateModule({
 	Name = "RemoteDisabler",
 	Function = function(callback)
 		if callback then
@@ -7001,26 +7001,7 @@ vape.Categories.Exploit:CreateModule({
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
-vape.Categories.Exploit:CreateModule({
-	Name = "RemoteDisabler",
-	Function = function(callback)
-		if callback then
-			for _, v in ipairs(getgc(true)) do
-				if typeof(v) == "Instance" and v:IsA("RemoteEvent") and v.Name:lower():find("kick") then
-					v.Destroy = function() end
-					v.FireServer = function() end
-					warn("[RemoteDisabler] Blocked: "..v.Name)
-				end
-			end
-		end
-	end,
-	Tooltip = "Blocks RemoteEvents with suspicious names like Kick or Report"
-})
-
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-
-vape.Categories.Exploit:CreateModule({
+vape.Categories.Utlity:CreateModule({
 	Name = "StateSpoofer",
 	Function = function(callback)
 		local conn
@@ -7039,7 +7020,7 @@ local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local Humanoid = LocalPlayer.Character and LocalPlayer.Character:WaitForChild("Humanoid")
 
-vape.Categories.Exploit:CreateModule({
+vape.Categories.Blatant:CreateModule({
 	Name = "SpeedScanBypass",
 	Function = function(callback)
 		local conn
@@ -7088,7 +7069,7 @@ local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
-vape.Categories.Exploit:CreateModule({
+vape.Categories.:CreateModule({
     Name = "AntiLagBack",
     Function = function(callback)
         local conn
@@ -7112,7 +7093,7 @@ vape.Categories.Exploit:CreateModule({
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
-vape.Categories.Exploit:CreateModule({
+vape.Categories.Blatant:CreateModule({
     Name = "AntiJumpCheck",
     Function = function(callback)
         local humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildWhichIsA("Humanoid")
@@ -8713,4 +8694,3 @@ run(function()
 	})
 	
 end)
-	
