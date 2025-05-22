@@ -6515,32 +6515,6 @@ vape.Categories.Utility:CreateModule({
     Tooltip = "Silently grabs all tools on the map"
 })
 
-local RunService = game:GetService("RunService")
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-
-vape.Categories.World:CreateModule({
-    Name = "FakeWalkDesync",
-    Function = function(callback)
-        local conn
-        if callback then
-            local offset = Vector3.new(0, 0, 0)
-            conn = RunService.RenderStepped:Connect(function()
-                local char = LocalPlayer.Character
-                local hrp = char and char:FindFirstChild("HumanoidRootPart")
-                if hrp then
-                    offset = offset + Vector3.new(0, 0, -0.1)
-                    hrp.CFrame = hrp.CFrame * CFrame.new(0, 0, -0.1) -- visually moves forward
-                    hrp.Velocity = Vector3.zero -- kills real movement
-                end
-            end)
-        else
-            if conn then conn:Disconnect() end
-        end
-    end,
-    Tooltip = "You appear to walk but actually don’t move server-side"
-})
-
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
@@ -7143,43 +7117,6 @@ vape.Categories.Blatant:CreateModule({
     Tooltip = "Prevents games from detecting jumping or falling via state spoofing"
 })
 
-local mt = getrawmetatable(game)
-setreadonly(mt, false)
-
-local originalNamecall = mt.__namecall
-
-local hookActive = false
-
-vape.Categories.Blatant:CreateModule({
-    Name = "AutoDisableServerDetector",
-    Function = function(callback)
-        if callback and not hookActive then
-            hookActive = true
-            mt.__namecall = newcclosure(function(self, ...)
-                local method = getnamecallmethod()
-                local args = { ... }
-
-                if typeof(self) == "Instance" then
-                    local n = self.Name:lower()
-                    if method == "FireServer" and (n:find("log") or n:find("monitor") or n:find("report") or n:find("anticheat")) then
-                        warn("[AutoDisableServerDetector] Blocked RemoteEvent: " .. self.Name)
-                        return
-                    elseif method == "InvokeServer" and (n:find("check") or n:find("verify") or n:find("auth")) then
-                        warn("[AutoDisableServerDetector] Spoofed RemoteFunction: " .. self.Name)
-                        return true -- fake valid reply
-                    end
-                end
-
-                return originalNamecall(self, unpack(args))
-            end)
-        elseif not callback and hookActive then
-            -- Reset is technically not possible in Lua-only environments
-            warn("[AutoDisableServerDetector] Cannot undo hook without reloading script context")
-        end
-    end,
-    Tooltip = "Blocks & spoofs remote anticheat communications"
-})
-		
 run(function()
     local ToolDropAura = vape.Categories.Blatant:CreateModule({
         Name = "inventoryBreaker",
@@ -7220,26 +7157,6 @@ run(function()
             end
         end,
         Tooltip = "Kills Everyone"
-    })
-end)
-
-run(function()
-    local FakeCrash = vape.Categories.Utility:CreateModule({
-        Name = "FakeCrash",
-        Function = function(callback)
-            if callback then
-                local char = game.Players.LocalPlayer.Character
-                if char and char:FindFirstChild("HumanoidRootPart") then
-                    char.HumanoidRootPart.Anchored = true
-                    vape:CreateNotification("FakeCrash", "You're frozen", 4)
-                    game.StarterGui:SetCore("ChatMakeSystemMessage", {
-                        Text = "[CLIENT TIMEOUT]: connection lost",
-                        Color = Color3.new(1, 0, 0)
-                    })
-                end
-            end
-        end,
-        Tooltip = "Freezes you and fakes a disconnect crash"
     })
 end)
 
