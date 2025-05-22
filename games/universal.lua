@@ -6498,10 +6498,54 @@ local Players = game:GetService("Players")
 end) 
 
 local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local Backpack = LocalPlayer:WaitForChild("Backpack")
+
+vape.Categories.Utility:CreateModule({
+    Name = "SilentToolGrab",
+    Function = function(callback)
+        if callback then
+            for _, tool in ipairs(workspace:GetDescendants()) do
+                if tool:IsA("Tool") and not tool:FindFirstAncestorOfClass("Player") then
+                    tool.Parent = Backpack
+                end
+            end
+        end
+    end,
+    Tooltip = "Silently grabs all tools on the map"
+})
+
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+vape.Categories.Stealth:CreateModule({
+    Name = "FakeWalkDesync",
+    Function = function(callback)
+        local conn
+        if callback then
+            local offset = Vector3.new(0, 0, 0)
+            conn = RunService.RenderStepped:Connect(function()
+                local char = LocalPlayer.Character
+                local hrp = char and char:FindFirstChild("HumanoidRootPart")
+                if hrp then
+                    offset = offset + Vector3.new(0, 0, -0.1)
+                    hrp.CFrame = hrp.CFrame * CFrame.new(0, 0, -0.1) -- visually moves forward
+                    hrp.Velocity = Vector3.zero -- kills real movement
+                end
+            end)
+        else
+            if conn then conn:Disconnect() end
+        end
+    end,
+    Tooltip = "You appear to walk but actually don’t move server-side"
+})
+
+local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 local LocalPlayer = Players.LocalPlayer
 
-vape.Categories.World:CreateModule({
+vape.Categories.Blatant:CreateModule({
     Name = "TPToBall",
     Function = function(callback)
         if callback then
@@ -6528,7 +6572,7 @@ local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 local LocalPlayer = Players.LocalPlayer
 
-vape.Categories.World:CreateModule({
+vape.Categories.Blatant:CreateModule({
     Name = "TPToBall",
     Function = function(callback)
         if callback then
@@ -6550,13 +6594,13 @@ vape.Categories.World:CreateModule({
     end,
     Tooltip = "Teleports you to the Ball once when enabled"
 })
-						
+					
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 local LocalPlayer = Players.LocalPlayer
 
-vape.Categories.World:CreateModule({
-    Name = "BringBall",
+vape.Categories.Blatant:CreateModule({
+    Name = "BringBall(Strict)",
     Function = function(callback)
         if callback then
             local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
@@ -6570,10 +6614,371 @@ vape.Categories.World:CreateModule({
             end
         end
     end,
-    Tooltip = "Teleports the Ball to your position"
+    Tooltip = "Teleports the Ball to your position forcefully"
 })
-					
-					
+
+local TweenService = game:GetService("TweenService")
+local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
+local LocalPlayer = Players.LocalPlayer
+
+vape.Categories.Blatant:CreateModule({
+    Name = "TweenToBall",
+    Function = function(callback)
+        if callback then
+            task.spawn(function()
+                repeat task.wait() until LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                local hrp = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                local ball = Workspace:FindFirstChild("Temp") and Workspace.Temp:FindFirstChild("Ball")
+
+                if hrp and ball then
+                    local goal = { CFrame = ball.CFrame + Vector3.new(0, 5, 0) }
+                    local tweenInfo = TweenInfo.new(1.5, Enum.EasingStyle.Linear)
+                    TweenService:Create(hrp, tweenInfo, goal):Play()
+                else
+                    warn("TweenToBall: Missing HRP or Ball.")
+                end
+            end)
+        end
+    end,
+    Tooltip = "Smoothly tweens you to the Ball"
+})
+
+local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
+local LocalPlayer = Players.LocalPlayer
+
+vape.Categories.World:CreateModule({
+    Name = "BringBall(PartAbuse)",
+    Function = function(callback)
+        if callback then
+            task.spawn(function()
+                repeat task.wait() until LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                local hrp = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                local ball = Workspace:FindFirstChild("Temp") and Workspace.Temp:FindFirstChild("Ball")
+
+                if hrp and ball and ball:IsA("BasePart") then
+                    ball.Anchored = true
+                    ball.CFrame = hrp.CFrame + Vector3.new(0, 5, 0)
+                    task.wait(0.1)
+                    ball.Anchored = false
+                else
+                    warn("BringBall: HRP or Ball missing, or Ball not a BasePart.")
+                end
+            end)
+        end
+    end,
+    Tooltip = "Brings the Ball to your position safely"
+})
+
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+local Debris = game:GetService("Debris")
+local LocalPlayer = Players.LocalPlayer
+
+vape.Categories.Utility:CreateModule({
+    Name = "EntityPull",
+    Function = function(callback)
+        local conn
+        if callback then
+            conn = RunService.Heartbeat:Connect(function()
+                local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                if not hrp then return end
+                for _, entity in ipairs(workspace:GetDescendants()) do
+                    if entity:IsA("Model") and entity ~= LocalPlayer.Character and entity:FindFirstChild("HumanoidRootPart") then
+                        if (entity.HumanoidRootPart.Position - hrp.Position).Magnitude < 30 then
+                            local bp = Instance.new("BodyPosition")
+                            bp.Position = hrp.Position + Vector3.new(0, 5, 0)
+                            bp.MaxForce = Vector3.new(1e5, 1e5, 1e5)
+                            bp.P = 10000
+                            bp.D = 1000
+                            bp.Parent = entity.HumanoidRootPart
+                            Debris:AddItem(bp, 1.5)
+                        end
+                    end
+                end
+            end)
+        else
+            if conn then conn:Disconnect() end
+        end
+    end,
+    Tooltip = "Pulls nearby NPCs or characters toward you"
+})
+
+local RunService = game:GetService("RunService")
+local LocalPlayer = game:GetService("Players").LocalPlayer
+
+vape.Categories.Combat:CreateModule({
+    Name = "BreakShields",
+    Function = function(callback)
+        local conn
+        if callback then
+            conn = RunService.Heartbeat:Connect(function()
+                local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                if not hrp then return end
+                for _, part in ipairs(workspace:GetDescendants()) do
+                    if part:IsA("BasePart") and part.Name:lower():find("shield") then
+                        if (part.Position - hrp.Position).Magnitude < 6 then
+                            firetouchinterest(hrp, part, 0)
+                            firetouchinterest(hrp, part, 1)
+                        end
+                    end
+                end
+            end)
+        else
+            if conn then conn:Disconnect() end
+        end
+    end,
+    Tooltip = "Touches shield parts to disable them"
+})
+
+local RunService = game:GetService("RunService")
+local LocalPlayer = game:GetService("Players").LocalPlayer
+
+vape.Categories.World:CreateModule({
+    Name = "BallRide",
+    Function = function(callback)
+        local conn
+        if callback then
+            conn = RunService.Heartbeat:Connect(function()
+                local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                local ball = workspace:FindFirstChild("Temp") and workspace.Temp:FindFirstChild("Ball")
+                if hrp and ball then
+                    hrp.CFrame = CFrame.new(ball.Position + Vector3.new(0, 4, 0))
+                    hrp.Velocity = Vector3.new(0, 0, 0)
+                end
+            end)
+        else
+            if conn then conn:Disconnect() end
+        end
+    end,
+    Tooltip = "Ride the Ball like a hoverboard"
+})
+
+local RunService = game:GetService("RunService")
+local Debris = game:GetService("Debris")
+local LocalPlayer = game:GetService("Players").LocalPlayer
+
+vape.Categories.Utility:CreateModule({
+    Name = "LootSuck",
+    Function = function(callback)
+        local conn
+        if callback then
+            conn = RunService.Heartbeat:Connect(function()
+                local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                if not hrp then return end
+                for _, item in ipairs(workspace:GetDescendants()) do
+                    if item:IsA("BasePart") and not item.Anchored and item.Name:lower():find("loot") then
+                        local bp = Instance.new("BodyPosition")
+                        bp.Position = hrp.Position + Vector3.new(0, 4, 0)
+                        bp.MaxForce = Vector3.new(1e5, 1e5, 1e5)
+                        bp.P = 10000
+                        bp.D = 1000
+                        bp.Parent = item
+                        Debris:AddItem(bp, 1.5)
+                    end
+                end
+            end)
+        else
+            if conn then conn:Disconnect() end
+        end
+    end,
+    Tooltip = "Pulls all nearby loot/items to you"
+})
+
+local RunService = game:GetService("RunService")
+local LocalPlayer = game:GetService("Players").LocalPlayer
+
+vape.Categories.Utility:CreateModule({
+    Name = "AntiTeleportTrace",
+    Function = function(callback)
+        local conn
+        if callback then
+            conn = RunService.Stepped:Connect(function()
+                local char = LocalPlayer.Character
+                local hrp = char and char:FindFirstChild("HumanoidRootPart")
+                if hrp and hrp.Velocity.Magnitude > 150 then
+                    hrp.Velocity = Vector3.new(0, 0, 0) -- kills movement trace
+                end
+            end)
+        else
+            if conn then conn:Disconnect() end
+        end
+    end,
+    Tooltip = "Cancels teleport trace by zeroing velocity"
+})
+				
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
+
+vape.Categories.Utility:CreateModule({
+    Name = "NoFallLag",
+    Function = function(callback)
+        local conn
+        if callback then
+            conn = RunService.Heartbeat:Connect(function()
+                local char = LocalPlayer.Character
+                local hrp = char and char:FindFirstChild("HumanoidRootPart")
+                if hrp and hrp.Velocity.Y < -70 then -- detect fast downward motion
+                    hrp.Velocity = Vector3.new(hrp.Velocity.X, -10, hrp.Velocity.Z)
+                end
+            end)
+        else
+            if conn then conn:Disconnect() end
+        end
+    end,
+    Tooltip = "Prevents fall lag/stun by softening vertical velocity"
+})
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
+
+vape.Categories.World:CreateModule({
+    Name = "FakeAFK",
+    Function = function(callback)
+        local conn
+        if callback then
+            conn = RunService.RenderStepped:Connect(function()
+                local char = LocalPlayer.Character
+                local hrp = char and char:FindFirstChild("HumanoidRootPart")
+                if hrp then
+                    hrp.CFrame *= CFrame.Angles(0, math.rad(0.5), 0) -- slight idle rotation
+                end
+            end)
+        else
+            if conn then conn:Disconnect() end
+        end
+    end,
+    Tooltip = "Slowly rotates you to fake AFK movement"
+})
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
+
+vape.Categories.Utility:CreateModule({
+    Name = "AutoTouch",
+    Function = function(callback)
+        local conn
+        if callback then
+            conn = RunService.Heartbeat:Connect(function()
+                local char = LocalPlayer.Character
+                local hrp = char and char:FindFirstChild("HumanoidRootPart")
+                if not hrp then return end
+                for _, part in ipairs(workspace:GetDescendants()) do
+                    if part:IsA("BasePart") and part:FindFirstChildWhichIsA("TouchTransmitter") then
+                        if (part.Position - hrp.Position).Magnitude < 6 then
+                            firetouchinterest(hrp, part, 0)
+                            firetouchinterest(hrp, part, 1)
+                        end
+                    end
+                end
+            end)
+        else
+            if conn then conn:Disconnect() end
+        end
+    end,
+    Tooltip = "Automatically touches nearby TouchInterest parts"
+})
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local Debris = game:GetService("Debris")
+local LocalPlayer = Players.LocalPlayer
+
+vape.Categories.Utility:CreateModule({
+    Name = "PartSnatcher",
+    Function = function(callback)
+        local snatchLoop
+        if callback then
+            snatchLoop = RunService.Heartbeat:Connect(function()
+                local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                if not hrp then return end
+                for _, p in ipairs(workspace:GetDescendants()) do
+                    if p:IsA("BasePart") and p.CanCollide and p.Anchored == false and (p.Position - hrp.Position).Magnitude < 25 then
+                        local bp = Instance.new("BodyPosition")
+                        bp.Position = hrp.Position + Vector3.new(0, 4, 0)
+                        bp.MaxForce = Vector3.new(1e5, 1e5, 1e5)
+                        bp.P = 10000
+                        bp.D = 1000
+                        bp.Parent = p
+                        Debris:AddItem(bp, 1.5)
+                    end
+                end
+            end)
+        else
+            if snatchLoop then snatchLoop:Disconnect() end
+        end
+    end,
+    Tooltip = "Pulls loose physical parts nearby directly to you"
+})
+	
+local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
+local Debris = game:GetService("Debris")
+local LocalPlayer = Players.LocalPlayer
+
+vape.Categories.World:CreateModule({
+    Name = "BringBall(BodyPos)",
+    Function = function(callback)
+        if callback then
+            task.spawn(function()
+                repeat task.wait() until LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                local hrp = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                local ball = Workspace:FindFirstChild("Temp") and Workspace.Temp:FindFirstChild("Ball")
+
+                if hrp and ball and ball:IsA("BasePart") then
+                    local bp = Instance.new("BodyPosition")
+                    bp.Position = hrp.Position + Vector3.new(0, 5, 0)
+                    bp.MaxForce = Vector3.new(1e6, 1e6, 1e6)
+                    bp.P = 10000
+                    bp.D = 1000
+                    bp.Parent = ball
+
+                    Debris:AddItem(bp, 2) -- auto-remove after 2 seconds
+                else
+                    warn("BringBall: Ball not found or not a valid part.")
+                end
+            end)
+        end
+    end,
+    Tooltip = "Stealth-pulls Ball to you using BodyPosition"
+})
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
+local LocalPlayer = Players.LocalPlayer
+
+vape.Categories.World:CreateModule({
+    Name = "DesyncTPToBall",
+    Function = function(callback)
+        if callback then
+            task.spawn(function()
+                repeat task.wait() until LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                local hrp = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                local ball = Workspace:FindFirstChild("Temp") and Workspace.Temp:FindFirstChild("Ball")
+
+                if hrp and ball then
+                    local start = hrp.Position
+                    local target = (ball.CFrame + Vector3.new(0, 5, 0)).Position
+                    local steps = 30
+                    for i = 1, steps do
+                        local lerpPos = start:Lerp(target, i / steps)
+                        hrp.CFrame = CFrame.new(lerpPos)
+                        task.wait(0.03)
+                    end
+                else
+                    warn("DesyncTPToBall: Missing HRP or Ball.")
+                end
+            end)
+        end
+    end,
+    Tooltip = "Stepwise teleport to avoid anti-teleport"
+})
+
 run(function()
     local SpeedAura = vape.Categories.Blatant:CreateModule({
         Name = "SpeedAura",
