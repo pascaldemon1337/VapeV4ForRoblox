@@ -7144,7 +7144,7 @@ local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
-vape.Categories.:CreateModule({
+vape.Categories.Utility:CreateModule({
     Name = "AntiLagBack",
     Function = function(callback)
         local conn
