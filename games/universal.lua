@@ -6456,52 +6456,47 @@ run(function()
 end)
 
 run(function()
-    local InstantTransAura
-    local oldrealremote
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
 
-    InstantTransAura = vape.Categories.Blatant:CreateModule({
-        Name = 'InstantTransAura',
-        Function = function(callback)
-            if callback then
-                -- Save the original function to restore later
-                oldrealremote = bedwars.ClientConstructor.Function.new
-                bedwars.ClientConstructor.Function.new = function(self, ind, ...)
-                    local res = oldrealremote(self, ind, ...)
-                    local oldRemote = res.instance
+local InstantTransAura
+local Connection
+local Active = false
 
-                    if oldRemote and oldRemote.Name == remotes.FireProjectile then
-                        res.instance = {
-                            InvokeServer = function(...)
-                                -- Custom behavior to teleport behind players or projectiles
-                                local player = game.Players.LocalPlayer
-                                local range = 10
-                                local auraPart = player.Character.HumanoidRootPart
+InstantTransAura = vape.Categories.Blatant:CreateModule({
+    Name = 'InstantTransAura',
+    Function = function(callback)
+        Active = callback
 
-                                for _, otherPlayer in pairs(game.Players:GetChildren()) do
-                                    if otherPlayer ~= player and otherPlayer.Character then
-                                        local distance = (otherPlayer.Character.HumanoidRootPart.Position - auraPart.Position).Magnitude
-                                        if distance < range then
-                                            -- Teleport behind the player
-                                            local direction = (auraPart.Position - otherPlayer.Character.HumanoidRootPart.Position).unit
-                                            player.Character:SetPrimaryPartCFrame(CFrame.new(otherPlayer.Character.HumanoidRootPart.Position) + direction * -3)
-                                        end
-                                    end
-                                end
-                                return oldRemote:InvokeServer(select(2, ...))
-                            end
-                        }
+        if callback then
+            Connection = game:GetService("RunService").Heartbeat:Connect(function()
+                if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then return end
+
+                local hrp = LocalPlayer.Character.HumanoidRootPart
+                local range = 10
+
+                for _, otherPlayer in pairs(Players:GetPlayers()) do
+                    if otherPlayer ~= LocalPlayer and otherPlayer.Character and otherPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                        local otherHRP = otherPlayer.Character.HumanoidRootPart
+                        local distance = (hrp.Position - otherHRP.Position).Magnitude
+
+                        if distance <= range then
+                            local direction = (hrp.Position - otherHRP.Position).Unit
+                            hrp.CFrame = CFrame.new(otherHRP.Position + direction * -3)
+                            break -- Teleport once per frame
+                        end
                     end
-
-                    return res
                 end
-            else
-                bedwars.ClientConstructor.Function.new = oldrealremote
-                oldrealremote = nil
+            end)
+        else
+            if Connection then
+                Connection:Disconnect()
+                Connection = nil
             end
-        end,
-        Tooltip = 'Teleports behind players or projectiles.'
-    })
-end)
+        end
+    end,
+    Tooltip = 'Teleports behind nearby players within range.'
+})
 	
 run(function()
     local SpeedAura = vape.Categories.Blatant:CreateModule({
