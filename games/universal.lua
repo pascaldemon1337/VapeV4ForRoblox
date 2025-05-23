@@ -6519,7 +6519,7 @@ local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
 vape.Categories.Utility:CreateModule({
-    Name = "HostSpoofer",
+    Name = "AdminPanel LOL",
     Function = function(callback)
         if callback then
             local spoofedHostId
