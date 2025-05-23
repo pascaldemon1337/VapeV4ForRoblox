@@ -6450,12 +6450,13 @@ vape.Categories.World:CreateModule({
 local RunService = game:GetService("RunService")
 local LocalPlayer = game:GetService("Players").LocalPlayer
 
+local ballrideConnection -- esta es la variable persistente
+
 vape.Categories.World:CreateModule({
     Name = "BallRide",
     Function = function(callback)
-        local conn
         if callback then
-            conn = RunService.Heartbeat:Connect(function()
+            ballrideConnection = RunService.Heartbeat:Connect(function()
                 local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
                 local ball = workspace:FindFirstChild("Temp") and workspace.Temp:FindFirstChild("Ball")
                 if hrp and ball then
@@ -6464,12 +6465,15 @@ vape.Categories.World:CreateModule({
                 end
             end)
         else
-            if conn then conn:Disconnect() end
+            if ballrideConnection then
+                ballrideConnection:Disconnect()
+                ballrideConnection = nil
+            end
         end
     end,
     Tooltip = "Ride the Ball like a hoverboard"
 })
-
+				
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
