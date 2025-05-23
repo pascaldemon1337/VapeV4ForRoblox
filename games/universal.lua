@@ -6414,6 +6414,128 @@ run(function()
 		Tooltip = 'Lets you stay ingame without getting kicked'
 	})
 end)
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
+local LocalPlayer = Players.LocalPlayer
+
+vape.Categories.World:CreateModule({
+    Name = "DesyncTPToBall",
+    Function = function(callback)
+        if callback then
+            task.spawn(function()
+                repeat task.wait() until LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                local hrp = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                local ball = Workspace:FindFirstChild("Temp") and Workspace.Temp:FindFirstChild("Ball")
+
+                if hrp and ball then
+                    local start = hrp.Position
+                    local target = (ball.CFrame + Vector3.new(0, 5, 0)).Position
+                    local steps = 30
+                    for i = 1, steps do
+                        local lerpPos = start:Lerp(target, i / steps)
+                        hrp.CFrame = CFrame.new(lerpPos)
+                        task.wait(0.03)
+                    end
+                else
+                    warn("DesyncTPToBall: Missing HRP or Ball.")
+                end
+            end)
+        end
+    end,
+    Tooltip = "Stepwise teleport to avoid anti-teleport"
+})
+
+local RunService = game:GetService("RunService")
+local LocalPlayer = game:GetService("Players").LocalPlayer
+
+vape.Categories.World:CreateModule({
+    Name = "BallRide",
+    Function = function(callback)
+        local conn
+        if callback then
+            conn = RunService.Heartbeat:Connect(function()
+                local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                local ball = workspace:FindFirstChild("Temp") and workspace.Temp:FindFirstChild("Ball")
+                if hrp and ball then
+                    hrp.CFrame = CFrame.new(ball.Position + Vector3.new(0, 4, 0))
+                    hrp.Velocity = Vector3.new(0, 0, 0)
+                end
+            end)
+        else
+            if conn then conn:Disconnect() end
+        end
+    end,
+    Tooltip = "Ride the Ball like a hoverboard"
+})
+
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+vape.Categories.Utility:CreateModule({
+    Name = "AntiLagBack",
+    Function = function(callback)
+        local conn
+        if callback then
+            conn = RunService.Heartbeat:Connect(function()
+                local char = LocalPlayer.Character
+                local hrp = char and char:FindFirstChild("HumanoidRootPart")
+                if hrp then
+                    -- Claim physics authority to reduce lagback events
+                    sethiddenproperty(hrp, "NetworkIsSleeping", true)
+                    hrp.Velocity = hrp.Velocity + Vector3.new(0.01, 0, 0) -- constantly in motion
+                end
+            end)
+        else
+            if conn then conn:Disconnect() end
+        end
+    end,
+    Tooltip = "Prevents server from lagbacking you after teleport or physics abuse"
+})
+
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local Humanoid = LocalPlayer.Character and LocalPlayer.Character:WaitForChild("Humanoid")
+
+vape.Categories.Blatant:CreateModule({
+	Name = "SpeedCheckBypass",
+	Function = function(callback)
+		local conn
+		if callback then
+			conn = Humanoid:GetPropertyChangedSignal("WalkSpeed"):Connect(function()
+				if Humanoid.WalkSpeed ~= 16 then
+					Humanoid.WalkSpeed = 16
+					warn("[SpeedScanBypass] Reset WalkSpeed to default")
+				end
+			end)
+		else
+			if conn then conn:Disconnect() end
+		end
+	end,
+	Tooltip = "Prevents WalkSpeed tampering from being detected"
+})
+
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+vape.Categories.Utility:CreateModule({
+	Name = "RemoteDisabler",
+	Function = function(callback)
+		if callback then
+			for _, v in ipairs(getgc(true)) do
+				if typeof(v) == "Instance" and v:IsA("RemoteEvent") and v.Name:lower():find("kick") then
+					v.Destroy = function() end
+					v.FireServer = function() end
+					warn("[RemoteDisabler] Blocked: "..v.Name)
+				end
+			end
+		end
+	end,
+	Tooltip = "Blocks RemoteEvents with suspicious names like Kick or Report"
+})
+
 	
 run(function()
 	local Freecam
