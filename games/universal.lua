@@ -6699,32 +6699,41 @@ local Workspace = game:GetService("Workspace")
 local RunService = game:GetService("RunService")
 
 local highlight
-local conn
+local refreshConn
 
 vape.Categories.Render:CreateModule({
     Name = "BallChams",
     Function = function(callback)
         if callback then
-            local ball = Workspace:FindFirstChild("Temp") and Workspace.Temp:FindFirstChild("Ball")
-            if ball then
-                highlight = Instance.new("Highlight")
-                highlight.Name = "BallHighlighter"
-                highlight.FillColor = Color3.fromRGB(255, 0, 0)
-                highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
-                highlight.FillTransparency = 0
-                highlight.OutlineTransparency = 0
-                highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
-                highlight.Adornee = ball
-                highlight.Parent = ball
-            end
+            refreshConn = RunService.Heartbeat:Connect(function(step)
+                local ball = Workspace:FindFirstChild("Temp") and Workspace.Temp:FindFirstChild("Ball")
+                if ball then
+                    if not highlight or highlight.Adornee ~= ball then
+                        if highlight then highlight:Destroy() end
+                        highlight = Instance.new("Highlight")
+                        highlight.Name = "BallHighlighter"
+                        highlight.FillColor = Color3.fromRGB(255, 0, 0)
+                        highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
+                        highlight.FillTransparency = 0
+                        highlight.OutlineTransparency = 0
+                        highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+                        highlight.Adornee = ball
+                        highlight.Parent = Workspace
+                    end
+                end
+            end)
         else
             if highlight then
                 highlight:Destroy()
                 highlight = nil
             end
+            if refreshConn then
+                refreshConn:Disconnect()
+                refreshConn = nil
+            end
         end
     end,
-    Tooltip = "Highlights the ball through walls in red."
+    Tooltip = "Highlight for GK'S and dribblers"
 })
 
 run(function()
@@ -8193,4 +8202,3 @@ run(function()
 	})
 	
 end)
-	
