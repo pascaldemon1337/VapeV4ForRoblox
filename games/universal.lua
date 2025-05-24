@@ -6473,7 +6473,46 @@ vape.Categories.World:CreateModule({
     end,
     Tooltip = "Ride the Ball like a hoverboard"
 })
-				
+
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
+local VirtualInputManager = game:GetService("VirtualInputManager")
+
+local LocalPlayer = Players.LocalPlayer
+local conn
+local originalCFrame = nil
+local delayTime = 0.25 -- time spent at the ball before returning
+
+vape.Categories.Blatant:CreateModule({
+    Name = "BallTPClick",
+    Function = function(callback)
+        if callback then
+            conn = RunService.Heartbeat:Connect(function()
+                local char = LocalPlayer.Character
+                local hrp = char and char:FindFirstChild("HumanoidRootPart")
+                local temp = Workspace:FindFirstChild("Temp")
+                local ball = temp and temp:FindFirstChild("Ball")
+
+                if hrp and ball then
+                    originalCFrame = hrp.CFrame
+                    hrp.CFrame = ball.CFrame + Vector3.new(0, 2, 0)
+
+                    -- Simulate a mouse click while at the ball
+                    VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 0)
+                    VirtualInputManager:SendMouseButtonEvent(0, 0, 0, false, game, 0)
+
+                    task.wait(delayTime)
+                    hrp.CFrame = originalCFrame
+                end
+            end)
+        else
+            if conn then conn:Disconnect() conn = nil end
+        end
+    end,
+    Tooltip = "Teleports to the ball, clicks once, and returns after 0.25s"
+})
+
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
