@@ -6500,6 +6500,33 @@ vape.Categories.Utility:CreateModule({
 })
 
 local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
+local LocalPlayer = Players.LocalPlayer
+
+vape.Categories.Blatant:CreateModule({
+    Name = "TPToBall",
+    Function = function(callback)
+        if callback then
+            task.spawn(function()
+                repeat task.wait() until LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                local character = LocalPlayer.Character
+                local hrp = character:FindFirstChild("HumanoidRootPart")
+
+                local temp = Workspace:FindFirstChild("Temp")
+                local ball = temp and temp:FindFirstChild("Ball")
+
+                if hrp and ball then
+                    hrp.CFrame = ball.CFrame + Vector3.new(0, 5, 0)
+                else
+                    warn("TPToBall: Failed to find HRP or Ball.")
+                end
+            end)
+        end
+    end,
+    Tooltip = "Teleports you to the Ball once when enabled"
+})
+
+local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local Humanoid = LocalPlayer.Character and LocalPlayer.Character:WaitForChild("Humanoid")
 
@@ -6540,6 +6567,32 @@ vape.Categories.Utility:CreateModule({
 	Tooltip = "Blocks RemoteEvents with suspicious names like Kick or Report"
 })
 
+local TweenService = game:GetService("TweenService")
+local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
+local LocalPlayer = Players.LocalPlayer
+
+vape.Categories.Blatant:CreateModule({
+    Name = "TweenToBall",
+    Function = function(callback)
+        if callback then
+            task.spawn(function()
+                repeat task.wait() until LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                local hrp = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                local ball = Workspace:FindFirstChild("Temp") and Workspace.Temp:FindFirstChild("Ball")
+
+                if hrp and ball then
+                    local goal = { CFrame = ball.CFrame + Vector3.new(0, 5, 0) }
+                    local tweenInfo = TweenInfo.new(1.5, Enum.EasingStyle.Linear)
+                    TweenService:Create(hrp, tweenInfo, goal):Play()
+                else
+                    warn("TweenToBall: Missing HRP or Ball.")
+                end
+            end)
+        end
+    end,
+    Tooltip = "Smoothly tweens you to the Ball"
+})
 	
 run(function()
 	local Freecam
