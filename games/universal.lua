@@ -6513,6 +6513,45 @@ vape.Categories.Blatant:CreateModule({
     Tooltip = "Teleports to the ball, clicks once, and returns after 0.25s"
 })
 
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+local conn
+
+return vape.Categories.World:CreateModule({
+    Name = "InfiniteStamina",
+    Tooltip = "Mantiene la stamina siempre llena",
+    Function = function(callback)
+        if callback then
+            local function setInfinite()
+                local char = Players.LocalPlayer.Character or Players.LocalPlayer.CharacterAdded:Wait()
+                local stats = char:WaitForChild("Stats", 5)
+
+                if stats then
+                    local stamina = stats:FindFirstChild("Stamina")
+                    local maxStamina = stats:FindFirstChild("MaxStamina")
+
+                    if stamina and maxStamina then
+                        conn = RunService.RenderStepped:Connect(function()
+                            stamina.Value = maxStamina.Value
+                        end)
+                    end
+                end
+            end
+
+            if Players.LocalPlayer.Character then
+                setInfinite()
+            end
+            Players.LocalPlayer.CharacterAdded:Connect(setInfinite)
+        else
+            if conn then
+                conn:Disconnect()
+                conn = nil
+            end
+        end
+    end
+})
+
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
