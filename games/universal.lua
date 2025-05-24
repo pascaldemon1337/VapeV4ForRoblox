@@ -6695,61 +6695,6 @@ vape.Categories.Combat:CreateModule({
     Tooltip = "forces network ownership on enemy root parts"
 })
 
-local UserInputService = game:GetService("UserInputService")
-local CoreGui = game:GetService("CoreGui")
-local workspace = game:GetService("Workspace")
-
-local highlight
-local inputConnection
-
-return vape.Categories.Render:CreateModule({
-    Name = "BallHighlighter",
-    Tooltip = "Highlights the Ball in Workspace.Temp and refreshes on W press",
-    Function = function(callback)
-        if callback then
-            local function applyHighlight()
-                if highlight then
-                    highlight:Destroy()
-                    highlight = nil
-                end
-
-                local temp = workspace:FindFirstChild("Temp")
-                local ball = temp and temp:FindFirstChild("Ball")
-
-                if ball then
-                    highlight = Instance.new("Highlight")
-                    highlight.Adornee = ball
-                    highlight.FillColor = Color3.fromRGB(255, 255, 0)
-                    highlight.OutlineColor = Color3.fromRGB(0, 0, 0)
-                    highlight.FillTransparency = 0.2
-                    highlight.OutlineTransparency = 0
-                    highlight.Parent = CoreGui
-                end
-            end
-
-            -- Apply once
-            applyHighlight()
-
-            -- Reapply on W press
-            inputConnection = UserInputService.InputBegan:Connect(function(input, gp)
-                if not gp and input.KeyCode == Enum.KeyCode.W then
-                    applyHighlight()
-                end
-            end)
-
-        else
-            if highlight then
-                highlight:Destroy()
-                highlight = nil
-            end
-            if inputConnection then
-                inputConnection:Disconnect()
-                inputConnection = nil
-            end
-        end
-    end
-})
-
 run(function()
 	local Freecam
 	local Value
