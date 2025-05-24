@@ -6666,28 +6666,21 @@ local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
 
+local conn
+
 vape.Categories.Combat:CreateModule({
     Name = "NetworkReach FSF",
     Function = function(callback)
-        local conn
         if callback then
             conn = RunService.Heartbeat:Connect(function()
                 for _, player in ipairs(Players:GetPlayers()) do
                     if player ~= LocalPlayer and player.Character then
-                        for _, part in ipairs(player.Character:GetChildren()) do
-                            if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
-                                -- Attempt to set network ownership
-                                pcall(function()
-                                    sethiddenproperty(part, "NetworkOwnershipRule", Enum.NetworkOwnership.Manual)
-                                    part:SetNetworkOwner(LocalPlayer)
-                                end)
-
-                                -- Enlarge the part locally
-                                part.Size = Vector3.new(7, 7, 7)
-                                part.Transparency = 0.7
-                                part.Material = Enum.Material.ForceField
-                                part.CanCollide = false
-                            end
+                        local hrp = player.Character:FindFirstChild("HumanoidRootPart")
+                        if hrp then
+                            pcall(function()
+                                sethiddenproperty(hrp, "NetworkOwnershipRule", Enum.NetworkOwnership.Manual)
+                                hrp:SetNetworkOwner(LocalPlayer)
+                            end)
                         end
                     end
                 end
@@ -6699,7 +6692,7 @@ vape.Categories.Combat:CreateModule({
             end
         end
     end,
-    Tooltip = "Expands and takes network ownership of enemy hitboxes."
+    Tooltip = "forces network ownership on enemy root parts"
 })
 
 local Workspace = game:GetService("Workspace")
