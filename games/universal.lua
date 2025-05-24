@@ -6697,29 +6697,29 @@ vape.Categories.Combat:CreateModule({
 
 local Workspace = game:GetService("Workspace")
 
-local highlight
-local refreshThread
+local highlight = nil
+local thread = nil
 
 vape.Categories.Render:CreateModule({
     Name = "HighlightBall",
-    Function = function(callback)
-        if callback then
-            refreshThread = task.spawn(function()
+    Function = function(enabled)
+        if enabled then
+            thread = task.spawn(function()
                 while vape.Categories.Render.Options["HighlightBall"] and vape.Categories.Render.Options["HighlightBall"].Enabled do
                     local ball = Workspace:FindFirstChild("Temp") and Workspace.Temp:FindFirstChild("Ball")
                     if ball then
-                        if highlight then
-                            highlight:Destroy()
+                        if not highlight or highlight.Adornee ~= ball then
+                            if highlight then highlight:Destroy() end
+                            highlight = Instance.new("Highlight")
+                            highlight.Name = "BallHighlighter"
+                            highlight.FillColor = Color3.fromRGB(255, 0, 0)
+                            highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
+                            highlight.FillTransparency = 0
+                            highlight.OutlineTransparency = 0
+                            highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+                            highlight.Adornee = ball
+                            highlight.Parent = Workspace
                         end
-                        highlight = Instance.new("Highlight")
-                        highlight.Name = "BallHighlighter"
-                        highlight.FillColor = Color3.fromRGB(255, 0, 0)
-                        highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
-                        highlight.FillTransparency = 0
-                        highlight.OutlineTransparency = 0
-                        highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
-                        highlight.Adornee = ball
-                        highlight.Parent = Workspace
                     end
                     task.wait(0.5)
                 end
@@ -6731,7 +6731,7 @@ vape.Categories.Render:CreateModule({
             end
         end
     end,
-    Tooltip = "Highlights the ball through walls and refreshes every 0.5s"
+    Tooltip = "Simple and stable ball highlighter (updates every 0.5s)"
 })
 
 run(function()
