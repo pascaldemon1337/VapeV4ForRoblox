@@ -6675,7 +6675,25 @@ local function flingPlayer(target)
     local targetHRP = getRoot(target.Character)
     if myHRP and targetHRP then
         myHRP.CFrame = targetHRP.CFrame + Vector3.new(0, 2, 0)
+
+        
+        local spin = Instance.new("BodyAngularVelocity")
+        spin.AngularVelocity = Vector3.new(0, 99999, 0)
+        spin.MaxTorque = Vector3.new(0, math.huge, 0)
+        spin.P = math.huge
+        spin.Name = "FlingSpin"
+        spin.Parent = myHRP
+
+        
         myHRP.Velocity = Vector3.new(9999, 9999, 9999)
+
+        
+        task.wait(0.1)
+
+        
+        if spin and spin.Parent then
+            spin:Destroy()
+        end
     end
 end
 
@@ -6689,7 +6707,6 @@ vape.Categories.Blatant:CreateModule({
                 for _, player in ipairs(Players:GetPlayers()) do
                     if player ~= LocalPlayer and player.Character then
                         flingPlayer(player)
-                        task.wait(0.4)
                     end
                 end
             end)
@@ -6700,7 +6717,7 @@ vape.Categories.Blatant:CreateModule({
             end
         end
     end,
-    Tooltip = "TP-flings every player one by one."
+    Tooltip = "Send everyone flying one by one"
 })
 
 run(function()
