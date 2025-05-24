@@ -6696,17 +6696,16 @@ vape.Categories.Combat:CreateModule({
 })
 
 local Workspace = game:GetService("Workspace")
-local RunService = game:GetService("RunService")
 
 local highlight
-local refreshLoop
+local refreshThread
 
 vape.Categories.Render:CreateModule({
-    Name = "BallChams",
-    Function = function(enabled)
-        if enabled then
-            refreshLoop = task.spawn(function()
-                while vape.Categories.Render.Options["HighlightBall"].Enabled do
+    Name = "HighlightBall",
+    Function = function(callback)
+        if callback then
+            refreshThread = task.spawn(function()
+                while vape.Categories.Render.Options["HighlightBall"] and vape.Categories.Render.Options["HighlightBall"].Enabled do
                     local ball = Workspace:FindFirstChild("Temp") and Workspace.Temp:FindFirstChild("Ball")
                     if ball then
                         if highlight then
@@ -6732,7 +6731,7 @@ vape.Categories.Render:CreateModule({
             end
         end
     end,
-    Tooltip = "Highlight for GK's & Dribblers"
+    Tooltip = "Highlights the ball through walls and refreshes every 0.5s"
 })
 
 run(function()
