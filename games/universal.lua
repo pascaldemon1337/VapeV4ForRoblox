@@ -6727,8 +6727,10 @@ return vape.Categories.Render:CreateModule({
                 end
             end
 
+            -- Apply once
             applyHighlight()
 
+            -- Reapply on W press
             inputConnection = UserInputService.InputBegan:Connect(function(input, gp)
                 if not gp and input.KeyCode == Enum.KeyCode.W then
                     applyHighlight()
