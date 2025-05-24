@@ -3,10 +3,8 @@ local TextChatService = game:GetService("TextChatService")
 local LocalPlayer = Players.LocalPlayer
 local OWNER_ID = 4211452992 -- Change this if needed
 
--- Mark yourself as a VapeUser
 LocalPlayer:SetAttribute("VapeUser", true)
 
--- Function to create floating tag
 local function createTag(text, color, player)
     local head = player.Character and player.Character:FindFirstChild("Head")
     if not head or head:FindFirstChild("VapeTag") then return end
@@ -31,7 +29,6 @@ local function createTag(text, color, player)
     label.Parent = tag
 end
 
--- Apply tag to player if marked as VapeUser
 local function tagPlayer(player)
     task.spawn(function()
         local char = player.Character or player.CharacterAdded:Wait()
@@ -46,7 +43,6 @@ local function tagPlayer(player)
     end)
 end
 
--- Set up connections when players are added or updated
 local function onPlayerAdded(player)
     player:GetAttributeChangedSignal("VapeUser"):Connect(function()
         if player:GetAttribute("VapeUser") then
@@ -88,10 +84,9 @@ TextChatService.OnIncomingMessage = function(message)
         return props
     end
 
-    return nil -- Let default system handle others
+    return nil
 end
 
--- File utilities and module loader
 local isfile = isfile or function(file)
 	local suc, res = pcall(function() return readfile(file) end)
 	return suc and res ~= nil and res ~= ''
