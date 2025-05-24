@@ -1,3 +1,63 @@
+
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local OWNER_ID = 4211452992
+
+-- Tag marker to identify users of your script
+LocalPlayer:SetAttribute("VapeUser", true)
+
+local function createTag(text, player)
+    local head = player.Character and player.Character:FindFirstChild("Head")
+    if not head or head:FindFirstChild("VapeTag") then return end
+
+    local tag = Instance.new("BillboardGui")
+    tag.Name = "VapeTag"
+    tag.Size = UDim2.new(0, 100, 0, 20)
+    tag.StudsOffset = Vector3.new(0, 3, 0)
+    tag.AlwaysOnTop = true
+    tag.Adornee = head
+    tag.Parent = head
+
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(1, 0, 1, 0)
+    label.BackgroundTransparency = 1
+    label.Text = text
+    label.TextColor3 = Color3.fromRGB(255, 0, 0)
+    label.TextStrokeTransparency = 0
+    label.Font = Enum.Font.GothamBold
+    label.TextScaled = true
+    label.Parent = tag
+end
+
+local function checkAndTag()
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer then
+            player.CharacterAdded:Connect(function()
+                task.wait(1)
+                if LocalPlayer.UserId == OWNER_ID and player:GetAttribute("VapeUser") then
+                    createTag("[Vape User]", player)
+                elseif player.UserId == OWNER_ID then
+                    createTag("[VAPE OWNER]", player)
+                end
+            end)
+            if player.Character then
+                task.wait(1)
+                if LocalPlayer.UserId == OWNER_ID and player:GetAttribute("VapeUser") then
+                    createTag("[Vape User]", player)
+                elseif player.UserId == OWNER_ID then
+                    createTag("[VAPE OWNER]", player)
+                end
+            end
+        end
+    end
+end
+
+Players.PlayerAdded:Connect(function(plr)
+    plr:GetPropertyChangedSignal("Character"):Connect(checkAndTag)
+end)
+
+checkAndTag()
+
 local loadstring = function(...)
 	local res, err = loadstring(...)
 	if err and vape then
