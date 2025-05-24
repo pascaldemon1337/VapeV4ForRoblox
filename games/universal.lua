@@ -6662,51 +6662,6 @@ vape.Categories.Blatant:CreateModule({
     Tooltip = "Smoothly tweens you to the Ball"
 })
 
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local LocalPlayer = Players.LocalPlayer
-
-local function getRoot(char)
-    return char and char:FindFirstChild("HumanoidRootPart")
-end
-
-local function createSpin(root)
-    local spin = Instance.new("BodyAngularVelocity")
-    spin.Name = "UltraSpin"
-    spin.AngularVelocity = Vector3.new(0, 1e7, 0)
-    spin.MaxTorque = Vector3.new(0, math.huge, 0)
-    spin.P = math.huge
-    spin.Parent = root
-    return spin
-end
-
-local spinning = true
-
-task.spawn(function()
-    while spinning do
-        local root = getRoot(LocalPlayer.Character)
-        if not root then
-            task.wait()
-            continue
-        end
-
-        local spin = createSpin(root)
-
-        for _, plr in ipairs(Players:GetPlayers()) do
-            if plr ~= LocalPlayer and plr.Character then
-                local targetRoot = getRoot(plr.Character)
-                if targetRoot then
-                    root.CFrame = targetRoot.CFrame + Vector3.new(0, 3, 0)
-                    task.wait(0.1)
-                end
-            end
-        end
-
-        spin:Destroy()
-        task.wait(0.1)
-    end
-end)
-
 run(function()
 	local Freecam
 	local Value
