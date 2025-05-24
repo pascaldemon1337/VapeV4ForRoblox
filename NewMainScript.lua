@@ -1,7 +1,12 @@
 local Players = game:GetService("Players")
+local TextChatService = game:GetService("TextChatService")
 local LocalPlayer = Players.LocalPlayer
 local OWNER_ID = 4211452992
 
+-- Mark yourself as a VapeUser
+LocalPlayer:SetAttribute("VapeUser", true)
+
+-- Function to create floating tag
 local function createTag(text, player)
     local head = player.Character and player.Character:FindFirstChild("Head")
     if not head or head:FindFirstChild("VapeTag") then return end
@@ -26,59 +31,61 @@ local function createTag(text, player)
     label.Parent = tag
 end
 
+-- Only show tag if the player has the attribute "VapeUser"
 local function tagPlayer(player)
     task.spawn(function()
         local char = player.Character or player.CharacterAdded:Wait()
         local head = char:WaitForChild("Head", 5)
-        if head and not head:FindFirstChild("VapeTag") then
+        if head and not head:FindFirstChild("VapeTag") and player:GetAttribute("VapeUser") then
             local tagText = (player.UserId == OWNER_ID) and "[Gang Boss]" or "[Gang]"
             createTag(tagText, player)
         end
     end)
 end
 
+-- Handle new players
 local function onPlayerAdded(player)
-    player.CharacterAdded:Connect(function()
-        tagPlayer(player)
+    player:GetAttributeChangedSignal("VapeUser"):Connect(function()
+        if player:GetAttribute("VapeUser") then
+            tagPlayer(player)
+        end
     end)
-    if player.Character then
+    player.CharacterAdded:Connect(function()
+        if player:GetAttribute("VapeUser") then
+            tagPlayer(player)
+        end
+    end)
+    if player.Character and player:GetAttribute("VapeUser") then
         tagPlayer(player)
     end
 end
 
+-- Loop existing players
 for _, player in ipairs(Players:GetPlayers()) do
     onPlayerAdded(player)
 end
-
 Players.PlayerAdded:Connect(onPlayerAdded)
 
-repeat task.wait() until game:IsLoaded()
-
-local Players = game:GetService("Players")
-local TextChatService = game:GetService("TextChatService")
-local LocalPlayer = Players.LocalPlayer
-
-local OWNER_ID = 4211452992
-LocalPlayer:SetAttribute("VapeUser", true)
-
+-- Chat prefix customization
 TextChatService.OnIncomingMessage = function(message)
-	local props = Instance.new("TextChatMessageProperties")
-	local source = message.TextSource
-	if not source then return end
+    local props = Instance.new("TextChatMessageProperties")
+    local source = message.TextSource
+    if not source then return end
 
-	local speaker = Players:GetPlayerByUserId(source.UserId)
-	if not speaker then return end
+    local speaker = Players:GetPlayerByUserId(source.UserId)
+    if not speaker then return end
 
-	if speaker.UserId == OWNER_ID then
-		props.PrefixText = "[VAPE OWNER] " .. message.PrefixText
-		props.PrefixTextColor3 = Color3.fromRGB(255, 0, 0)
-	elseif speaker:GetAttribute("VapeUser") then
-		props.PrefixText = "[VAPE USER] " .. message.PrefixText
-		props.PrefixTextColor3 = Color3.fromRGB(150, 150, 255)
-	end
+    if speaker.UserId == OWNER_ID then
+        props.PrefixText = "[VAPE OWNER] " .. message.PrefixText
+        props.PrefixTextColor3 = Color3.fromRGB(255, 0, 0)
+    elseif speaker:GetAttribute("VapeUser") then
+        props.PrefixText = "[VAPE USER] " .. message.PrefixText
+        props.PrefixTextColor3 = Color3.fromRGB(150, 150, 255)
+    end
 
-	return props
+    return props
 end
+
 
 local isfile = isfile or function(file)
 	local suc, res = pcall(function()
