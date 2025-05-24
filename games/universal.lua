@@ -6662,6 +6662,47 @@ vape.Categories.Blatant:CreateModule({
     Tooltip = "Smoothly tweens you to the Ball"
 })
 	
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
+
+local function getRoot(char)
+    return char and char:FindFirstChild("HumanoidRootPart")
+end
+
+local function flingPlayer(target)
+    local myHRP = getRoot(LocalPlayer.Character)
+    local targetHRP = getRoot(target.Character)
+    if myHRP and targetHRP then
+        myHRP.CFrame = targetHRP.CFrame + Vector3.new(0, 2, 0)
+        myHRP.Velocity = Vector3.new(9999, 9999, 9999)
+    end
+end
+
+local conn
+
+vape.Categories.Blatant:CreateModule({
+    Name = "FlingEachPlayer",
+    Function = function(callback)
+        if callback then
+            conn = RunService.Heartbeat:Connect(function()
+                for _, player in ipairs(Players:GetPlayers()) do
+                    if player ~= LocalPlayer and player.Character then
+                        flingPlayer(player)
+                        task.wait(0.4)
+                    end
+                end
+            end)
+        else
+            if conn then
+                conn:Disconnect()
+                conn = nil
+            end
+        end
+    end,
+    Tooltip = "TP-flings every player one by one."
+})
+
 run(function()
 	local Freecam
 	local Value
