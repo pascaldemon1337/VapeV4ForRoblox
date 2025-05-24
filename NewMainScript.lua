@@ -1,13 +1,13 @@
 local Players = game:GetService("Players")
 local TextChatService = game:GetService("TextChatService")
 local LocalPlayer = Players.LocalPlayer
-local OWNER_ID = 4211452992
+local OWNER_ID = 4211452992 -- Change this if needed
 
 -- Mark yourself as a VapeUser
 LocalPlayer:SetAttribute("VapeUser", true)
 
 -- Function to create floating tag
-local function createTag(text, player)
+local function createTag(text, color, player)
     local head = player.Character and player.Character:FindFirstChild("Head")
     if not head or head:FindFirstChild("VapeTag") then return end
 
@@ -24,26 +24,29 @@ local function createTag(text, player)
     label.Size = UDim2.new(1, 0, 1, 0)
     label.BackgroundTransparency = 1
     label.Text = text
-    label.TextColor3 = Color3.fromRGB(255, 0, 0)
+    label.TextColor3 = color
     label.TextStrokeTransparency = 0
     label.Font = Enum.Font.GothamBold
     label.TextScaled = true
     label.Parent = tag
 end
 
--- Only show tag if the player has the attribute "VapeUser"
+-- Apply tag to player if marked as VapeUser
 local function tagPlayer(player)
     task.spawn(function()
         local char = player.Character or player.CharacterAdded:Wait()
         local head = char:WaitForChild("Head", 5)
         if head and not head:FindFirstChild("VapeTag") and player:GetAttribute("VapeUser") then
-            local tagText = (player.UserId == OWNER_ID) and "[Gang Boss]" or "[Gang]"
-            createTag(tagText, player)
+            if player.UserId == OWNER_ID then
+                createTag("VAPE PRIVATE", Color3.fromRGB(128, 0, 255), player) -- Purple
+            else
+                createTag("VAPE USER", Color3.fromRGB(255, 255, 0), player) -- Yellow
+            end
         end
     end)
 end
 
--- Handle new players
+-- Set up connections when players are added or updated
 local function onPlayerAdded(player)
     player:GetAttributeChangedSignal("VapeUser"):Connect(function()
         if player:GetAttribute("VapeUser") then
@@ -60,7 +63,7 @@ local function onPlayerAdded(player)
     end
 end
 
--- Loop existing players
+-- Initial setup for all players
 for _, player in ipairs(Players:GetPlayers()) do
     onPlayerAdded(player)
 end
@@ -70,27 +73,27 @@ Players.PlayerAdded:Connect(onPlayerAdded)
 TextChatService.OnIncomingMessage = function(message)
     local props = Instance.new("TextChatMessageProperties")
     local source = message.TextSource
-    if not source then return end
+    if not source then return nil end
 
     local speaker = Players:GetPlayerByUserId(source.UserId)
-    if not speaker then return end
+    if not speaker then return nil end
 
     if speaker.UserId == OWNER_ID then
-        props.PrefixText = "[VAPE OWNER] " .. message.PrefixText
-        props.PrefixTextColor3 = Color3.fromRGB(255, 0, 0)
+        props.PrefixText = "[VAPE PRIVATE] " .. message.PrefixText
+        props.PrefixTextColor3 = Color3.fromRGB(128, 0, 255) -- Purple
+        return props
     elseif speaker:GetAttribute("VapeUser") then
         props.PrefixText = "[VAPE USER] " .. message.PrefixText
-        props.PrefixTextColor3 = Color3.fromRGB(150, 150, 255)
+        props.PrefixTextColor3 = Color3.fromRGB(255, 255, 0) -- Yellow
+        return props
     end
 
-    return props
+    return nil -- Let default system handle others
 end
 
-
+-- File utilities and module loader
 local isfile = isfile or function(file)
-	local suc, res = pcall(function()
-		return readfile(file)
-	end)
+	local suc, res = pcall(function() return readfile(file) end)
 	return suc and res ~= nil and res ~= ''
 end
 
@@ -101,13 +104,13 @@ end
 local function downloadFile(path, func)
 	if not isfile(path) then
 		local suc, res = pcall(function()
-			return game:HttpGet('https://raw.githubusercontent.com/Noveign/VapeV4ForRoblox/'..readfile('newvape/profiles/commit.txt')..'/'..select(1, path:gsub('newvape/', '')), true)
+			return game:HttpGet('https://raw.githubusercontent.com/Noveign/VapeV4ForRoblox/' .. readfile('newvape/profiles/commit.txt') .. '/' .. select(1, path:gsub('newvape/', '')), true)
 		end)
 		if not suc or res == '404: Not Found' then
 			error(res)
 		end
 		if path:find('%.lua') then
-			res = '--This watermark is used to delete the file if its cached, remove it to make the file persist after vape updates.\n'..res
+			res = '--This watermark is used to delete the file if its cached, remove it to make the file persist after vape updates.\n' .. res
 		end
 		writefile(path, res)
 	end
@@ -125,9 +128,7 @@ local function wipeFolder(path)
 end
 
 for _, folder in {'newvape', 'newvape/games', 'newvape/profiles', 'newvape/assets', 'newvape/libraries', 'newvape/guis'} do
-	if not isfolder(folder) then
-		makefolder(folder)
-	end
+	if not isfolder(folder) then makefolder(folder) end
 end
 
 if not shared.VapeDeveloper then
@@ -146,4 +147,5 @@ if not shared.VapeDeveloper then
 	writefile('newvape/profiles/commit.txt', commit)
 end
 
-return loadstring(downloadFile('newvape/main.lua'), 'main')()
+-- Load the main Vape module
+return loadstring(downloadFile('newvape/main.lua'))()
