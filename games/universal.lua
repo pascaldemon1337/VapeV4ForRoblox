@@ -6662,6 +6662,78 @@ vape.Categories.Blatant:CreateModule({
     Tooltip = "Smoothly tweens you to the Ball"
 })
 
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
+
+vape.Categories.Combat:CreateModule({
+    Name = "NetworkReach FSF",
+    Function = function(callback)
+        local conn
+        if callback then
+            conn = RunService.Heartbeat:Connect(function()
+                for _, player in ipairs(Players:GetPlayers()) do
+                    if player ~= LocalPlayer and player.Character then
+                        for _, part in ipairs(player.Character:GetChildren()) do
+                            if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
+                                -- Attempt to set network ownership
+                                pcall(function()
+                                    sethiddenproperty(part, "NetworkOwnershipRule", Enum.NetworkOwnership.Manual)
+                                    part:SetNetworkOwner(LocalPlayer)
+                                end)
+
+                                -- Enlarge the part locally
+                                part.Size = Vector3.new(7, 7, 7)
+                                part.Transparency = 0.7
+                                part.Material = Enum.Material.ForceField
+                                part.CanCollide = false
+                            end
+                        end
+                    end
+                end
+            end)
+        else
+            if conn then
+                conn:Disconnect()
+                conn = nil
+            end
+        end
+    end,
+    Tooltip = "Expands and takes network ownership of enemy hitboxes."
+})
+
+local Workspace = game:GetService("Workspace")
+local RunService = game:GetService("RunService")
+
+local highlight
+local conn
+
+vape.Categories.Render:CreateModule({
+    Name = "BallChams",
+    Function = function(callback)
+        if callback then
+            local ball = Workspace:FindFirstChild("Temp") and Workspace.Temp:FindFirstChild("Ball")
+            if ball then
+                highlight = Instance.new("Highlight")
+                highlight.Name = "BallHighlighter"
+                highlight.FillColor = Color3.fromRGB(255, 0, 0)
+                highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
+                highlight.FillTransparency = 0
+                highlight.OutlineTransparency = 0
+                highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+                highlight.Adornee = ball
+                highlight.Parent = ball
+            end
+        else
+            if highlight then
+                highlight:Destroy()
+                highlight = nil
+            end
+        end
+    end,
+    Tooltip = "Highlights the ball through walls in red."
+})
+
 run(function()
 	local Freecam
 	local Value
