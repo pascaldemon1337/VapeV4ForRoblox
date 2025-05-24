@@ -1,7 +1,7 @@
 local Players = game:GetService("Players")
 local TextChatService = game:GetService("TextChatService")
 local LocalPlayer = Players.LocalPlayer
-local OWNER_ID = 4211452992
+local OWNER_ID = 4263708911
 
 LocalPlayer:SetAttribute("VapeUser", true)
 
