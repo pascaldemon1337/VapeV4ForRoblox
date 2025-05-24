@@ -5773,16 +5773,6 @@ mainapi:CreateCategory({
 	Size = UDim2.fromOffset(14, 14)
 })
 mainapi:CreateCategory({
-	Name = 'Exploit',
-	Icon = getcustomasset('newvape/assets/new/blatanticon.png'),
-	Size = UDim2.fromOffset(14, 14)
-})
-mainapi:CreateCategory({
-	Name = 'ServerSide',
-	Icon = getcustomasset('newvape/assets/new/blatanticon.png'),
-	Size = UDim2.fromOffset(14, 14)
-})
-mainapi:CreateCategory({
 	Name = 'Render',
 	Icon = getcustomasset('newvape/assets/new/rendericon.png'),
 	Size = UDim2.fromOffset(15, 14)
