@@ -6695,43 +6695,57 @@ vape.Categories.Combat:CreateModule({
     Tooltip = "forces network ownership on enemy root parts"
 })
 
-local Workspace = game:GetService("Workspace")
+local UserInputService = game:GetService("UserInputService")
+local CoreGui = game:GetService("CoreGui")
+local workspace = game:GetService("Workspace")
 
-local highlight = nil
-local thread = nil
+local highlight
+local inputConnection
 
-vape.Categories.Render:CreateModule({
-    Name = "HighlightBall",
-    Function = function(enabled)
-        if enabled then
-            thread = task.spawn(function()
-                while vape.Categories.Render.Options["HighlightBall"] and vape.Categories.Render.Options["HighlightBall"].Enabled do
-                    local ball = Workspace:FindFirstChild("Temp") and Workspace.Temp:FindFirstChild("Ball")
-                    if ball then
-                        if not highlight or highlight.Adornee ~= ball then
-                            if highlight then highlight:Destroy() end
-                            highlight = Instance.new("Highlight")
-                            highlight.Name = "BallHighlighter"
-                            highlight.FillColor = Color3.fromRGB(255, 0, 0)
-                            highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
-                            highlight.FillTransparency = 0
-                            highlight.OutlineTransparency = 0
-                            highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
-                            highlight.Adornee = ball
-                            highlight.Parent = Workspace
-                        end
-                    end
-                    task.wait(0.5)
+return vape.Categories.Render:CreateModule({
+    Name = "BallHighlighter",
+    Tooltip = "Highlights the Ball in Workspace.Temp and refreshes on W press",
+    Function = function(callback)
+        if callback then
+            local function applyHighlight()
+                if highlight then
+                    highlight:Destroy()
+                    highlight = nil
+                end
+
+                local temp = workspace:FindFirstChild("Temp")
+                local ball = temp and temp:FindFirstChild("Ball")
+
+                if ball then
+                    highlight = Instance.new("Highlight")
+                    highlight.Adornee = ball
+                    highlight.FillColor = Color3.fromRGB(255, 255, 0)
+                    highlight.OutlineColor = Color3.fromRGB(0, 0, 0)
+                    highlight.FillTransparency = 0.2
+                    highlight.OutlineTransparency = 0
+                    highlight.Parent = CoreGui
+                end
+            end
+
+            applyHighlight()
+
+            inputConnection = UserInputService.InputBegan:Connect(function(input, gp)
+                if not gp and input.KeyCode == Enum.KeyCode.W then
+                    applyHighlight()
                 end
             end)
+
         else
             if highlight then
                 highlight:Destroy()
                 highlight = nil
             end
+            if inputConnection then
+                inputConnection:Disconnect()
+                inputConnection = nil
+            end
         end
-    end,
-    Tooltip = "Simple and stable ball highlighter (updates every 0.5s)"
+    end
 })
 
 run(function()
