@@ -1,92 +1,88 @@
 local Players = game:GetService("Players")
 local TextChatService = game:GetService("TextChatService")
 local LocalPlayer = Players.LocalPlayer
-local OWNER_ID = 4211452992 -- Your UserId here
+local OWNER_ID = 4211452992
 
-LocalPlayer:SetAttribute("VapeUser", true)
-
-local function createTag(text, color, player)
-	local head = player.Character and player.Character:FindFirstChild("Head")
-	if not head or head:FindFirstChild("VapeTag") then return end
-
-	local tag = Instance.new("BillboardGui")
-	tag.Name = "VapeTag"
-	tag.Size = UDim2.new(0, 100, 0, 20)
-	tag.StudsOffset = Vector3.new(0, 3, 0)
-	tag.AlwaysOnTop = true
-	tag.Adornee = head
-	tag.ResetOnSpawn = false
-	tag.Parent = head
-
-	local label = Instance.new("TextLabel")
-	label.Size = UDim2.new(1, 0, 1, 0)
-	label.BackgroundTransparency = 1
-	label.Text = text
-	label.TextColor3 = color
-	label.TextStrokeTransparency = 0
-	label.Font = Enum.Font.GothamBold
-	label.TextScaled = true
-	label.Parent = tag
+-- Shared user list (cross-client)
+shared.VapeUserIds = shared.VapeUserIds or {}
+if not table.find(shared.VapeUserIds, LocalPlayer.UserId) then
+    table.insert(shared.VapeUserIds, LocalPlayer.UserId)
 end
 
-local function tagPlayer(player)
-	task.spawn(function()
-		local char = player.Character or player.CharacterAdded:Wait()
-		local head = char:WaitForChild("Head", 5)
-		if head and not head:FindFirstChild("VapeTag") and player:GetAttribute("VapeUser") then
-			if player.UserId == OWNER_ID then
-				createTag("VAPE PRIVATE", Color3.fromRGB(128, 0, 255), player)
-			else
-				createTag("VAPE USER", Color3.fromRGB(255, 255, 0), player)
-			end
-		end
-	end)
+-- Function to add floating tag
+local function createTag(player, label, color)
+    local head = player.Character and player.Character:FindFirstChild("Head")
+    if not head or head:FindFirstChild("VapeTag") then return end
+
+    local tag = Instance.new("BillboardGui")
+    tag.Name = "VapeTag"
+    tag.Size = UDim2.new(0, 100, 0, 20)
+    tag.StudsOffset = Vector3.new(0, 3, 0)
+    tag.AlwaysOnTop = true
+    tag.Adornee = head
+    tag.ResetOnSpawn = false
+    tag.Parent = head
+
+    local labelObj = Instance.new("TextLabel")
+    labelObj.Size = UDim2.new(1, 0, 1, 0)
+    labelObj.BackgroundTransparency = 1
+    labelObj.Text = label
+    labelObj.TextColor3 = color
+    labelObj.TextStrokeTransparency = 0
+    labelObj.Font = Enum.Font.GothamBold
+    labelObj.TextScaled = true
+    labelObj.Parent = tag
 end
 
-local function onPlayerAdded(player)
-	player:GetAttributeChangedSignal("VapeUser"):Connect(function()
-		if player:GetAttribute("VapeUser") then
-			tagPlayer(player)
-		end
-	end)
-	player.CharacterAdded:Connect(function()
-		if player:GetAttribute("VapeUser") then
-			tagPlayer(player)
-		end
-	end)
-	if player.Character and player:GetAttribute("VapeUser") then
-		tagPlayer(player)
-	end
+local function tryTagPlayer(player)
+    if table.find(shared.VapeUserIds, player.UserId) then
+        if player.UserId == OWNER_ID then
+            createTag(player, "VAPE PRIVATE", Color3.fromRGB(128, 0, 255))
+        else
+            createTag(player, "VAPE USER", Color3.fromRGB(255, 255, 0))
+        end
+    end
 end
 
-for _, player in ipairs(Players:GetPlayers()) do
-	onPlayerAdded(player)
+local function handlePlayer(player)
+    player.CharacterAdded:Connect(function()
+        tryTagPlayer(player)
+    end)
+    if player.Character then
+        tryTagPlayer(player)
+    end
 end
-Players.PlayerAdded:Connect(onPlayerAdded)
+
+for _, p in ipairs(Players:GetPlayers()) do
+    handlePlayer(p)
+end
+Players.PlayerAdded:Connect(handlePlayer)
+
+local function broadcastPresence()
+    local msg = ":VAPE:" .. tostring(LocalPlayer.UserId)
+    game:GetService("ReplicatedStorage"):WaitForChild("DefaultChatSystemChatEvents", 10)
+    local chatEvent = game:GetService("ReplicatedStorage"):FindFirstChild("DefaultChatSystemChatEvents")
+    if chatEvent and chatEvent:FindFirstChild("SayMessageRequest") then
+        chatEvent.SayMessageRequest:FireServer(msg, "All")
+    end
+end
+
+broadcastPresence()
 
 TextChatService.OnIncomingMessage = function(message)
-	local props = Instance.new("TextChatMessageProperties")
-	local source = message.TextSource
-	if not source then return nil end
-
-	local speaker = Players:GetPlayerByUserId(source.UserId)
-	if not speaker then return nil end
-
-	if message.Text:lower() == "detect me" and message.Metadata == "TextChatMessageMetadata.Private" then
-		speaker:SetAttribute("VapeUser", true)
-	end
-
-	if speaker.UserId == OWNER_ID then
-		props.PrefixText = "[VAPE PRIVATE] " .. message.PrefixText
-		props.PrefixTextColor3 = Color3.fromRGB(128, 0, 255)
-		return props
-	elseif speaker:GetAttribute("VapeUser") then
-		props.PrefixText = "[VAPE USER] " .. message.PrefixText
-		props.PrefixTextColor3 = Color3.fromRGB(255, 255, 0)
-		return props
-	end
-
-	return nil
+    local text = message.Text
+    local matched = string.match(text, ":VAPE:(%d+)")
+    if matched then
+        local userId = tonumber(matched)
+        if userId and not table.find(shared.VapeUserIds, userId) then
+            table.insert(shared.VapeUserIds, userId)
+            local player = Players:GetPlayerByUserId(userId)
+            if player then
+                tryTagPlayer(player)
+            end
+        end
+    end
+    return nil
 end
 
 local isfile = isfile or function(file)
