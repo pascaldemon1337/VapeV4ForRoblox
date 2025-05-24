@@ -6699,17 +6699,19 @@ local Workspace = game:GetService("Workspace")
 local RunService = game:GetService("RunService")
 
 local highlight
-local refreshConn
+local refreshLoop
 
 vape.Categories.Render:CreateModule({
     Name = "BallChams",
-    Function = function(callback)
-        if callback then
-            refreshConn = RunService.Heartbeat:Connect(function(step)
-                local ball = Workspace:FindFirstChild("Temp") and Workspace.Temp:FindFirstChild("Ball")
-                if ball then
-                    if not highlight or highlight.Adornee ~= ball then
-                        if highlight then highlight:Destroy() end
+    Function = function(enabled)
+        if enabled then
+            refreshLoop = task.spawn(function()
+                while vape.Categories.Render.Options["HighlightBall"].Enabled do
+                    local ball = Workspace:FindFirstChild("Temp") and Workspace.Temp:FindFirstChild("Ball")
+                    if ball then
+                        if highlight then
+                            highlight:Destroy()
+                        end
                         highlight = Instance.new("Highlight")
                         highlight.Name = "BallHighlighter"
                         highlight.FillColor = Color3.fromRGB(255, 0, 0)
@@ -6720,6 +6722,7 @@ vape.Categories.Render:CreateModule({
                         highlight.Adornee = ball
                         highlight.Parent = Workspace
                     end
+                    task.wait(0.5)
                 end
             end)
         else
@@ -6727,13 +6730,9 @@ vape.Categories.Render:CreateModule({
                 highlight:Destroy()
                 highlight = nil
             end
-            if refreshConn then
-                refreshConn:Disconnect()
-                refreshConn = nil
-            end
         end
     end,
-    Tooltip = "Highlight for GK'S and dribblers"
+    Tooltip = "Highlight for GK's & Dribblers"
 })
 
 run(function()
@@ -8202,3 +8201,4 @@ run(function()
 	})
 	
 end)
+	
