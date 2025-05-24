@@ -6661,7 +6661,7 @@ vape.Categories.Blatant:CreateModule({
     end,
     Tooltip = "Smoothly tweens you to the Ball"
 })
-	
+
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
@@ -6670,55 +6670,42 @@ local function getRoot(char)
     return char and char:FindFirstChild("HumanoidRootPart")
 end
 
-local function flingPlayer(target)
-    local myHRP = getRoot(LocalPlayer.Character)
-    local targetHRP = getRoot(target.Character)
-    if myHRP and targetHRP then
-        myHRP.CFrame = targetHRP.CFrame + Vector3.new(0, 2, 0)
-
-        
-        local spin = Instance.new("BodyAngularVelocity")
-        spin.AngularVelocity = Vector3.new(0, 99999, 0)
-        spin.MaxTorque = Vector3.new(0, math.huge, 0)
-        spin.P = math.huge
-        spin.Name = "FlingSpin"
-        spin.Parent = myHRP
-
-        
-        myHRP.Velocity = Vector3.new(9999, 9999, 9999)
-
-        
-        task.wait(0.1)
-
-        
-        if spin and spin.Parent then
-            spin:Destroy()
-        end
-    end
+local function createSpin(root)
+    local spin = Instance.new("BodyAngularVelocity")
+    spin.Name = "UltraSpin"
+    spin.AngularVelocity = Vector3.new(0, 1e7, 0)
+    spin.MaxTorque = Vector3.new(0, math.huge, 0)
+    spin.P = math.huge
+    spin.Parent = root
+    return spin
 end
 
-local conn
+local spinning = true
 
-vape.Categories.Blatant:CreateModule({
-    Name = "FlingEachPlayer",
-    Function = function(callback)
-        if callback then
-            conn = RunService.Heartbeat:Connect(function()
-                for _, player in ipairs(Players:GetPlayers()) do
-                    if player ~= LocalPlayer and player.Character then
-                        flingPlayer(player)
-                    end
+task.spawn(function()
+    while spinning do
+        local root = getRoot(LocalPlayer.Character)
+        if not root then
+            task.wait()
+            continue
+        end
+
+        local spin = createSpin(root)
+
+        for _, plr in ipairs(Players:GetPlayers()) do
+            if plr ~= LocalPlayer and plr.Character then
+                local targetRoot = getRoot(plr.Character)
+                if targetRoot then
+                    root.CFrame = targetRoot.CFrame + Vector3.new(0, 3, 0)
+                    task.wait(0.1)
                 end
-            end)
-        else
-            if conn then
-                conn:Disconnect()
-                conn = nil
             end
         end
-    end,
-    Tooltip = "Send everyone flying one by one"
-})
+
+        spin:Destroy()
+        task.wait(0.1)
+    end
+end)
 
 run(function()
 	local Freecam
