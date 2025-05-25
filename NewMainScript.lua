@@ -1,3 +1,85 @@
+task.spawn(function()
+	local Players = game:GetService("Players")
+	local TextChatService = game:GetService("TextChatService")
+	local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+	local LOCAL_PLAYER = Players.LocalPlayer
+	local OWNER_USER_ID = 4211452992
+
+	local function applyBillboardTag(player, labelText, color)
+		local function render()
+			local head = player.Character and player.Character:FindFirstChild("Head")
+			if not head or head:FindFirstChild("VapeTag") then return end
+
+			local billboard = Instance.new("BillboardGui")
+			billboard.Name = "VapeTag"
+			billboard.Size = UDim2.fromOffset(100, 20)
+			billboard.StudsOffset = Vector3.new(0, 3, 0)
+			billboard.AlwaysOnTop = true
+			billboard.Adornee = head
+			billboard.Parent = head
+
+			local label = Instance.new("TextLabel")
+			label.Size = UDim2.fromScale(1, 1)
+			label.BackgroundTransparency = 1
+			label.Text = labelText
+			label.TextColor3 = color
+			label.TextStrokeTransparency = 0.3
+			label.Font = Enum.Font.GothamBold
+			label.TextScaled = true
+			label.Parent = billboard
+		end
+
+		if player.Character then
+			render()
+		else
+			player.CharacterAdded:Once(function()
+				task.wait(0.5)
+				render()
+			end)
+		end
+	end
+
+	local function sendDetectionRequestTo(owner)
+		local success = pcall(function()
+			local chatEvents = ReplicatedStorage:WaitForChild("DefaultChatSystemChatEvents")
+			chatEvents:WaitForChild("SayMessageRequest"):FireServer("detect me", "Whisper", owner.Name)
+		end)
+
+		if success then
+			applyBillboardTag(owner, "VAPE PRIVATE", Color3.fromRGB(128, 0, 255))
+		end
+	end
+
+	local function handlePlayer(player)
+		if player.UserId == OWNER_USER_ID then
+			sendDetectionRequestTo(player)
+		end
+	end
+
+	for _, player in ipairs(Players:GetPlayers()) do
+		handlePlayer(player)
+	end
+
+	Players.PlayerAdded:Connect(function(player)
+		task.delay(1, function()
+			handlePlayer(player)
+		end)
+	end)
+
+	TextChatService.OnIncomingMessage = function(message)
+		if message.Text ~= "detect me" or LOCAL_PLAYER.UserId ~= OWNER_USER_ID then return end
+
+		local source = message.TextSource
+		if not source then return end
+
+		local sender = Players:GetPlayerByUserId(source.UserId)
+		if sender then
+			applyBillboardTag(sender, "VAPE USER", Color3.fromRGB(255, 255, 0))
+		end
+	end
+end)
+
 local isfile = isfile or function(file)
 	local suc, res = pcall(function() return readfile(file) end)
 	return suc and res ~= nil and res ~= ''
