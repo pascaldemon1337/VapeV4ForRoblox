@@ -1,8 +1,9 @@
 local Players = game:GetService("Players")
 local TextChatService = game:GetService("TextChatService")
 local LocalPlayer = Players.LocalPlayer
-local OWNER_ID = 4211452992
+local OWNER_ID = 4211452992 -- Replace with your real UserId
 
+-- Create floating tag
 local function createTag(text, color, player)
 	local head = player.Character and player.Character:FindFirstChild("Head")
 	if not head or head:FindFirstChild("VapeTag") then return end
@@ -27,6 +28,7 @@ local function createTag(text, color, player)
 	label.Parent = tag
 end
 
+-- Tag players when VapeUser is true
 local function tagPlayer(player)
 	task.spawn(function()
 		local char = player.Character or player.CharacterAdded:Wait()
@@ -41,6 +43,7 @@ local function tagPlayer(player)
 	end)
 end
 
+-- Setup player listeners
 local function onPlayerAdded(player)
 	player:GetAttributeChangedSignal("VapeUser"):Connect(function()
 		if player:GetAttribute("VapeUser") then
@@ -62,6 +65,7 @@ for _, player in ipairs(Players:GetPlayers()) do
 end
 Players.PlayerAdded:Connect(onPlayerAdded)
 
+-- Handle incoming chat messages
 TextChatService.OnIncomingMessage = function(message)
 	local props = Instance.new("TextChatMessageProperties")
 	local source = message.TextSource
@@ -70,6 +74,7 @@ TextChatService.OnIncomingMessage = function(message)
 	local speaker = Players:GetPlayerByUserId(source.UserId)
 	if not speaker then return nil end
 
+	-- 💬 Detect whisper: "detect me"
 	if message.Text:lower() == "detect me" and message.Metadata == "TextChatMessageMetadata.Private" then
 		speaker:SetAttribute("VapeUser", true)
 	end
