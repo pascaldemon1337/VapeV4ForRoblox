@@ -1,14 +1,13 @@
 pcall(function()
 	task.spawn(function()
 		local Players = game:GetService("Players")
-		local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 		local LOCAL_PLAYER = Players.LocalPlayer
-		local OWNER_USER_ID = 4417052147
+		local OWNER_USER_ID = 4211452992
 
-		local TAG_NAME = "VapeTag"
-		local TAG_TEXT = "VAPE PRIVATE"
-		local TAG_COLOR = Color3.fromRGB(128, 0, 255)
+		local TAG_NAME = "VapeUserTag"
+		local TAG_TEXT = "Vape user"
+		local TAG_COLOR = Color3.fromRGB(255, 255, 0) -- Yellow
 
 		local function applyBillboardTag(player)
 			local function render()
@@ -44,44 +43,24 @@ pcall(function()
 			end
 		end
 
-		local function sendDetectionRequestTo(owner)
-			local success = pcall(function()
-				local chatEvents = ReplicatedStorage:WaitForChild("DefaultChatSystemChatEvents", 2)
-				local sayMessage = chatEvents and chatEvents:FindFirstChild("SayMessageRequest")
-				if sayMessage then
-					sayMessage:FireServer("detect me", "Whisper", owner.Name)
-				end
-			end)
-
-			if success then
-				applyBillboardTag(owner)
-			end
-		end
-
-		local function scanForOwner()
+		local function tagAllOtherPlayers()
 			for _, player in ipairs(Players:GetPlayers()) do
-				if player.UserId == OWNER_USER_ID then
-					sendDetectionRequestTo(player)
+				if player ~= LOCAL_PLAYER then
+					applyBillboardTag(player)
 				end
 			end
-		end
-
-		local function setupDetection()
-			scanForOwner()
 
 			Players.PlayerAdded:Connect(function(player)
-				if player.UserId == OWNER_USER_ID then
-					sendDetectionRequestTo(player)
+				if player ~= LOCAL_PLAYER then
+					applyBillboardTag(player)
 				end
 			end)
 		end
 
-		setupDetection()
-
-		LOCAL_PLAYER.CharacterAdded:Connect(function()
-			task.wait(1)
-			setupDetection()
-		end)
+		-- Only apply tags if *you* are the owner
+		if LOCAL_PLAYER.UserId == OWNER_USER_ID then
+			tagAllOtherPlayers()
+		end
 	end)
 end)
 
