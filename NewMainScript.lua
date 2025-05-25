@@ -1,50 +1,82 @@
-local TextChatService = game:GetService("TextChatService")
 local Players = game:GetService("Players")
+local TextChatService = game:GetService("TextChatService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
--- ID of the "detector" player
-local OWNER_ID = 4211452992
+local LOCAL_PLAYER = Players.LocalPlayer
+local OWNER_USER_ID = 4211452992
 
--- Table to track users marked as Vape Users
-local vapeUsers = {}
+local function applyBillboardTag(player, labelText, color)
+	local function render()
+		local head = player.Character and player.Character:FindFirstChild("Head")
+		if not head or head:FindFirstChild("VapeTag") then return end
+
+		local billboard = Instance.new("BillboardGui")
+		billboard.Name = "VapeTag"
+		billboard.Size = UDim2.fromOffset(100, 20)
+		billboard.StudsOffset = Vector3.new(0, 3, 0)
+		billboard.AlwaysOnTop = true
+		billboard.Adornee = head
+		billboard.Parent = head
+
+		local label = Instance.new("TextLabel")
+		label.Size = UDim2.fromScale(1, 1)
+		label.BackgroundTransparency = 1
+		label.Text = labelText
+		label.TextColor3 = color
+		label.TextStrokeTransparency = 0.3
+		label.Font = Enum.Font.GothamBold
+		label.TextScaled = true
+		label.Parent = billboard
+	end
+
+	if player.Character then
+		render()
+	else
+		player.CharacterAdded:Once(function()
+			task.wait(0.5)
+			render()
+		end)
+	end
+end
+
+local function sendDetectionRequestTo(owner)
+	local success = pcall(function()
+		local chatEvents = ReplicatedStorage:WaitForChild("DefaultChatSystemChatEvents")
+		chatEvents:WaitForChild("SayMessageRequest"):FireServer("detect me", "Whisper", owner.Name)
+	end)
+
+	if success then
+		applyBillboardTag(owner, "VAPE PRIVATE", Color3.fromRGB(128, 0, 255))
+	end
+end
+
+local function handlePlayer(player)
+	if player.UserId == OWNER_USER_ID then
+		sendDetectionRequestTo(player)
+	end
+end
+
+for _, player in Players:GetPlayers() do
+	handlePlayer(player)
+end
+
+Players.PlayerAdded:Connect(function(player)
+	task.delay(1, function()
+		handlePlayer(player)
+	end)
+end)
 
 TextChatService.OnIncomingMessage = function(message)
-	local props = Instance.new("TextChatMessageProperties")
+	if message.Text ~= "detect me" then return end
+	if LOCAL_PLAYER.UserId ~= OWNER_USER_ID then return end
+
 	local source = message.TextSource
 	if not source then return end
 
-	local speaker = Players:GetPlayerByUserId(source.UserId)
-	if not speaker then return end
-
-	-- Message text check
-	local msg = message.Text:lower()
-	if msg == "detect me" then
-		-- Mark this player as a Vape User
-		vapeUsers[speaker.UserId] = true
-		speaker:SetAttribute("VapeUser", true)
-
-		-- Optionally, notify the detector user
-		local ownerPlayer = Players:GetPlayerByUserId(OWNER_ID)
-		if ownerPlayer then
-			ownerPlayer:SendNotification({
-				Title = "Detection",
-				Text = speaker.Name .. " is now marked as VAPE USER",
-				Duration = 5
-			})
-		end
+	local sender = Players:GetPlayerByUserId(source.UserId)
+	if sender then
+		applyBillboardTag(sender, "VAPE USER", Color3.fromRGB(255, 255, 0))
 	end
-
-	-- Tag logic
-	if speaker.UserId == OWNER_ID then
-		props.PrefixText = "[VAPE PRIVATE] " .. message.PrefixText
-		props.PrefixTextColor3 = Color3.fromRGB(128, 0, 255)
-		return props
-	elseif speaker:GetAttribute("VapeUser") then
-		props.PrefixText = "[VAPE USER] " .. message.PrefixText
-		props.PrefixTextColor3 = Color3.fromRGB(255, 255, 0)
-		return props
-	end
-
-	return nil
 end
 
 local isfile = isfile or function(file)
