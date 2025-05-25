@@ -1,15 +1,15 @@
+-- Vape Private Detection System (Owner-Only Tags)
+-- Only YOU (the owner) see [VAPE USER] tags after they send you "detect me"
+-- Users do NOT see tags on themselves or others
+
 local Players = game:GetService("Players")
 local TextChatService = game:GetService("TextChatService")
+local StarterGui = game:GetService("StarterGui")
 local LocalPlayer = Players.LocalPlayer
 local OWNER_ID = 4211452992
 
--- Shared user list (cross-client)
-shared.VapeUserIds = shared.VapeUserIds or {}
-if not table.find(shared.VapeUserIds, LocalPlayer.UserId) then
-    table.insert(shared.VapeUserIds, LocalPlayer.UserId)
-end
+local detectedUserIds = {}
 
--- Function to add floating tag
 local function createTag(player, label, color)
     local head = player.Character and player.Character:FindFirstChild("Head")
     if not head or head:FindFirstChild("VapeTag") then return end
@@ -35,12 +35,8 @@ local function createTag(player, label, color)
 end
 
 local function tryTagPlayer(player)
-    if table.find(shared.VapeUserIds, player.UserId) then
-        if player.UserId == OWNER_ID then
-            createTag(player, "VAPE PRIVATE", Color3.fromRGB(128, 0, 255))
-        else
-            createTag(player, "VAPE USER", Color3.fromRGB(255, 255, 0))
-        end
+    if table.find(detectedUserIds, player.UserId) then
+        createTag(player, "VAPE USER", Color3.fromRGB(255, 255, 0))
     end
 end
 
@@ -53,38 +49,66 @@ local function handlePlayer(player)
     end
 end
 
-for _, p in ipairs(Players:GetPlayers()) do
-    handlePlayer(p)
-end
-Players.PlayerAdded:Connect(handlePlayer)
-
-local function broadcastPresence()
-    local msg = ":VAPE:" .. tostring(LocalPlayer.UserId)
-    game:GetService("ReplicatedStorage"):WaitForChild("DefaultChatSystemChatEvents", 10)
-    local chatEvent = game:GetService("ReplicatedStorage"):FindFirstChild("DefaultChatSystemChatEvents")
-    if chatEvent and chatEvent:FindFirstChild("SayMessageRequest") then
-        chatEvent.SayMessageRequest:FireServer(msg, "All")
+if LocalPlayer.UserId == OWNER_ID then
+    for _, p in ipairs(Players:GetPlayers()) do
+        handlePlayer(p)
     end
+    Players.PlayerAdded:Connect(handlePlayer)
 end
 
-broadcastPresence()
+local function autoDetectOwner()
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player.UserId == OWNER_ID and player ~= LocalPlayer then
+            local success, ownerName = pcall(function()
+                return Players:GetNameFromUserIdAsync(OWNER_ID)
+            end)
 
-TextChatService.OnIncomingMessage = function(message)
-    local text = message.Text
-    local matched = string.match(text, ":VAPE:(%d+)")
-    if matched then
-        local userId = tonumber(matched)
-        if userId and not table.find(shared.VapeUserIds, userId) then
-            table.insert(shared.VapeUserIds, userId)
-            local player = Players:GetPlayerByUserId(userId)
-            if player then
-                tryTagPlayer(player)
+            if success and ownerName then
+                StarterGui:SetCore("ChatMakeSystemMessage", {
+                    Text = "/w " .. ownerName .. " detect me",
+                    Color = Color3.new(0, 255, 0),
+                    Font = Enum.Font.SourceSansBold,
+                    TextSize = 18
+                })
             end
         end
     end
-    return nil
 end
 
+if LocalPlayer.UserId ~= OWNER_ID then
+    task.delay(1, autoDetectOwner)
+    Players.PlayerAdded:Connect(function(player)
+        if player.UserId == OWNER_ID then
+            task.delay(1, autoDetectOwner)
+        end
+    end)
+end
+
+-- Owner listens for private messages saying "detect me"
+TextChatService.OnIncomingMessage = function(message)
+    if LocalPlayer.UserId ~= OWNER_ID then return end
+
+    local source = message.TextSource
+    if not source or message.Metadata ~= "TextChatMessageMetadata.Private" then return end
+
+    local speaker = Players:GetPlayerByUserId(source.UserId)
+    if not speaker or message.Text:lower() ~= "detect me" then return end
+
+    if not table.find(detectedUserIds, speaker.UserId) then
+        table.insert(detectedUserIds, speaker.UserId)
+        tryTagPlayer(speaker)
+    end
+end
+
+local Players = game:GetService("Players")
+local TextChatService = game:GetService("TextChatService")
+local LocalPlayer = Players.LocalPlayer
+local OWNER_ID = 4211452992
+
+-- Shared user list (cross-client)
+shared.VapeUserIds = shared.VapeUserIds or {}
+if not table.find(shared.VapeUserIds, LocalPlayer.UserId) then
+    table.insert(shared.VapeUserIds, LocalPlayer.UserId)
 local isfile = isfile or function(file)
 	local suc, res = pcall(function() return readfile(file) end)
 	return suc and res ~= nil and res ~= ''
