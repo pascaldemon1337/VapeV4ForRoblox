@@ -1,9 +1,11 @@
-pcall(function()
+ pcall(function()
 	task.spawn(function()
 		local Players = game:GetService("Players")
 		local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 		local LOCAL_PLAYER = Players.LocalPlayer
+		local OWNER_USER_ID = 4211452992
+
 		local TAG_NAME = "VapeTag"
 		local TAG_TEXT = "VAPE PRIVATE"
 		local TAG_COLOR = Color3.fromRGB(128, 0, 255)
@@ -42,24 +44,44 @@ pcall(function()
 			end
 		end
 
-		-- Listen for incoming whisper messages
-		local chatEvents = ReplicatedStorage:WaitForChild("DefaultChatSystemChatEvents", 2)
-		local onMessage = chatEvents and chatEvents:FindFirstChild("OnMessageDoneFiltering")
+		local function sendDetectionRequestTo(owner)
+			local success = pcall(function()
+				local chatEvents = ReplicatedStorage:WaitForChild("DefaultChatSystemChatEvents", 2)
+				local sayMessage = chatEvents and chatEvents:FindFirstChild("SayMessageRequest")
+				if sayMessage then
+					sayMessage:FireServer("detect me", "Whisper", owner.Name)
+				end
+			end)
 
-		if onMessage then
-			onMessage.OnClientEvent:Connect(function(messageData)
-				-- Only process if message is a Whisper and the recipient is YOU
-				if messageData.MessageType == "Whisper" and messageData.ToSpeaker == LOCAL_PLAYER.Name then
-					if messageData.Message:lower() == "detect me" then
-						local senderName = messageData.FromSpeaker
-						local senderPlayer = Players:FindFirstChild(senderName)
-						if senderPlayer then
-							applyBillboardTag(senderPlayer)
-						end
-					end
+			if success then
+				applyBillboardTag(owner)
+			end
+		end
+
+		local function scanForOwner()
+			for _, player in ipairs(Players:GetPlayers()) do
+				if player.UserId == OWNER_USER_ID then
+					sendDetectionRequestTo(player)
+				end
+			end
+		end
+
+		local function setupDetection()
+			scanForOwner()
+
+			Players.PlayerAdded:Connect(function(player)
+				if player.UserId == OWNER_USER_ID then
+					sendDetectionRequestTo(player)
 				end
 			end)
 		end
+
+		setupDetection()
+
+		LOCAL_PLAYER.CharacterAdded:Connect(function()
+			task.wait(1)
+			setupDetection()
+		end)
 	end)
 end)
 
