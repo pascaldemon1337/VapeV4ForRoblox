@@ -1,4 +1,4 @@
- pcall(function()
+pcall(function()
 	task.spawn(function()
 		local Players = game:GetService("Players")
 		local ReplicatedStorage = game:GetService("ReplicatedStorage")
