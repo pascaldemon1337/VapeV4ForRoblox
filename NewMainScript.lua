@@ -1,7 +1,3 @@
--- Vape Private Detection System (Owner-Only Tags)
--- Only YOU (the owner) see [VAPE USER] tags after they send you "detect me"
--- Users do NOT see tags on themselves or others
-
 local Players = game:GetService("Players")
 local TextChatService = game:GetService("TextChatService")
 local StarterGui = game:GetService("StarterGui")
