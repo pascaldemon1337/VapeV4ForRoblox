@@ -4,7 +4,7 @@ pcall(function()
 		local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 		local LOCAL_PLAYER = Players.LocalPlayer
-		local OWNER_USER_ID = 4211452992
+		local OWNER_USER_ID = 4417052147
 
 		local TAG_NAME = "VapeTag"
 		local TAG_TEXT = "VAPE PRIVATE"
