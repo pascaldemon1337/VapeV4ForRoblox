@@ -1,59 +1,51 @@
+local TextChatService = game:GetService("TextChatService")
 local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-local OWNER_ID = 4211452992 -- your userId
 
--- Function to create the tag
-local function tagOwnerIfPresent()
-    for _, player in ipairs(Players:GetPlayers()) do
-        if player.UserId == OWNER_ID and player ~= LocalPlayer then
-            local function apply()
-                local head = player.Character and player.Character:FindFirstChild("Head")
-                if head and not head:FindFirstChild("VapeTag") then
-                    local tag = Instance.new("BillboardGui")
-                    tag.Name = "VapeTag"
-                    tag.Size = UDim2.new(0, 100, 0, 20)
-                    tag.StudsOffset = Vector3.new(0, 3, 0)
-                    tag.AlwaysOnTop = true
-                    tag.Adornee = head
-                    tag.ResetOnSpawn = false
-                    tag.Parent = head
+-- ID of the "detector" player
+local OWNER_ID = 4211452992
 
-                    local label = Instance.new("TextLabel")
-                    label.Size = UDim2.new(1, 0, 1, 0)
-                    label.BackgroundTransparency = 1
-                    label.Text = "VAPE PRIVATE"
-                    label.TextColor3 = Color3.fromRGB(128, 0, 255)
-                    label.TextStrokeTransparency = 0
-                    label.Font = Enum.Font.GothamBold
-                    label.TextScaled = true
-                    label.Parent = tag
-                end
-            end
+-- Table to track users marked as Vape Users
+local vapeUsers = {}
 
-            if player.Character then
-                apply()
-            end
-            player.CharacterAdded:Connect(function()
-                task.wait(1)
-                apply()
-            end)
-        end
-    end
+TextChatService.OnIncomingMessage = function(message)
+	local props = Instance.new("TextChatMessageProperties")
+	local source = message.TextSource
+	if not source then return end
+
+	local speaker = Players:GetPlayerByUserId(source.UserId)
+	if not speaker then return end
+
+	-- Message text check
+	local msg = message.Text:lower()
+	if msg == "detect me" then
+		-- Mark this player as a Vape User
+		vapeUsers[speaker.UserId] = true
+		speaker:SetAttribute("VapeUser", true)
+
+		-- Optionally, notify the detector user
+		local ownerPlayer = Players:GetPlayerByUserId(OWNER_ID)
+		if ownerPlayer then
+			ownerPlayer:SendNotification({
+				Title = "Detection",
+				Text = speaker.Name .. " is now marked as VAPE USER",
+				Duration = 5
+			})
+		end
+	end
+
+	-- Tag logic
+	if speaker.UserId == OWNER_ID then
+		props.PrefixText = "[VAPE PRIVATE] " .. message.PrefixText
+		props.PrefixTextColor3 = Color3.fromRGB(128, 0, 255)
+		return props
+	elseif speaker:GetAttribute("VapeUser") then
+		props.PrefixText = "[VAPE USER] " .. message.PrefixText
+		props.PrefixTextColor3 = Color3.fromRGB(255, 255, 0)
+		return props
+	end
+
+	return nil
 end
-
--- Run it
-tagOwnerIfPresent()
-
--- Also trigger if owner joins late
-Players.PlayerAdded:Connect(function(player)
-    if player.UserId == OWNER_ID then
-        player.CharacterAdded:Connect(function()
-            task.wait(1)
-            tagOwnerIfPresent()
-        end)
-    end
-end)
-
 
 local isfile = isfile or function(file)
 	local suc, res = pcall(function() return readfile(file) end)
