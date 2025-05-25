@@ -1,9 +1,10 @@
+-- 🔥 VAPE PRIVATE / USER DETECTION SCRIPT
 local Players = game:GetService("Players")
 local TextChatService = game:GetService("TextChatService")
 local LocalPlayer = Players.LocalPlayer
 local OWNER_ID = 4211452992 -- Replace with your UserId
 
--- Create 3D tag above head
+-- Create 3D tag
 local function createNametag(player, text, color)
 	local head = player.Character and player.Character:FindFirstChild("Head")
 	if not head or head:FindFirstChild("VapeTag") then return end
@@ -28,7 +29,6 @@ local function createNametag(player, text, color)
 	label.Parent = tag
 end
 
--- Tag player if they’re in the VapeUser list
 local function tagPlayer(player)
 	task.spawn(function()
 		local char = player.Character or player.CharacterAdded:Wait()
@@ -43,7 +43,6 @@ local function tagPlayer(player)
 	end)
 end
 
--- Connect detection
 local function onPlayerAdded(player)
 	player:GetAttributeChangedSignal("VapeUser"):Connect(function()
 		if player:GetAttribute("VapeUser") then
@@ -65,30 +64,30 @@ for _, p in ipairs(Players:GetPlayers()) do
 end
 Players.PlayerAdded:Connect(onPlayerAdded)
 
--- CHAT TAG SYSTEM
+-- CHAT PREFIX TAGGING
 TextChatService.OnIncomingMessage = function(message)
 	local props = Instance.new("TextChatMessageProperties")
 	local source = message.TextSource
-	if not source then return end
+	if not source then return nil end
 
 	local speaker = Players:GetPlayerByUserId(source.UserId)
-	if not speaker then return end
+	if not speaker then return nil end
 
-	-- Detect whisper
 	if message.Text:lower() == "detect me" and message.Metadata == "TextChatMessageMetadata.Private" then
 		speaker:SetAttribute("VapeUser", true)
 	end
 
-	-- Chat prefix logic
 	if speaker.UserId == OWNER_ID then
 		props.PrefixText = "[VAPE PRIVATE] " .. message.PrefixText
 		props.PrefixTextColor3 = Color3.fromRGB(128, 0, 255)
+		return props
 	elseif speaker:GetAttribute("VapeUser") then
 		props.PrefixText = "[VAPE USER] " .. message.PrefixText
 		props.PrefixTextColor3 = Color3.fromRGB(255, 255, 0)
+		return props
 	end
 
-	return props
+	return nil
 end
 
 local isfile = isfile or function(file)
