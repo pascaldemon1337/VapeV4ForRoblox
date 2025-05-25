@@ -1,94 +1,59 @@
--- 🔥 VAPE PRIVATE / USER DETECTION SCRIPT
 local Players = game:GetService("Players")
-local TextChatService = game:GetService("TextChatService")
 local LocalPlayer = Players.LocalPlayer
-local OWNER_ID = 4211452992 -- Replace with your UserId
+local OWNER_ID = 4211452992 -- your userId
 
--- Create 3D tag
-local function createNametag(player, text, color)
-	local head = player.Character and player.Character:FindFirstChild("Head")
-	if not head or head:FindFirstChild("VapeTag") then return end
+-- Function to create the tag
+local function tagOwnerIfPresent()
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player.UserId == OWNER_ID and player ~= LocalPlayer then
+            local function apply()
+                local head = player.Character and player.Character:FindFirstChild("Head")
+                if head and not head:FindFirstChild("VapeTag") then
+                    local tag = Instance.new("BillboardGui")
+                    tag.Name = "VapeTag"
+                    tag.Size = UDim2.new(0, 100, 0, 20)
+                    tag.StudsOffset = Vector3.new(0, 3, 0)
+                    tag.AlwaysOnTop = true
+                    tag.Adornee = head
+                    tag.ResetOnSpawn = false
+                    tag.Parent = head
 
-	local tag = Instance.new("BillboardGui")
-	tag.Name = "VapeTag"
-	tag.Size = UDim2.new(0, 100, 0, 20)
-	tag.StudsOffset = Vector3.new(0, 3, 0)
-	tag.AlwaysOnTop = true
-	tag.Adornee = head
-	tag.ResetOnSpawn = false
-	tag.Parent = head
+                    local label = Instance.new("TextLabel")
+                    label.Size = UDim2.new(1, 0, 1, 0)
+                    label.BackgroundTransparency = 1
+                    label.Text = "VAPE PRIVATE"
+                    label.TextColor3 = Color3.fromRGB(128, 0, 255)
+                    label.TextStrokeTransparency = 0
+                    label.Font = Enum.Font.GothamBold
+                    label.TextScaled = true
+                    label.Parent = tag
+                end
+            end
 
-	local label = Instance.new("TextLabel")
-	label.Size = UDim2.new(1, 0, 1, 0)
-	label.BackgroundTransparency = 1
-	label.Text = text
-	label.TextColor3 = color
-	label.TextStrokeTransparency = 0
-	label.Font = Enum.Font.GothamBold
-	label.TextScaled = true
-	label.Parent = tag
+            if player.Character then
+                apply()
+            end
+            player.CharacterAdded:Connect(function()
+                task.wait(1)
+                apply()
+            end)
+        end
+    end
 end
 
-local function tagPlayer(player)
-	task.spawn(function()
-		local char = player.Character or player.CharacterAdded:Wait()
-		local head = char:WaitForChild("Head", 5)
-		if head and not head:FindFirstChild("VapeTag") and player:GetAttribute("VapeUser") then
-			if player.UserId == OWNER_ID then
-				createNametag(player, "VAPE PRIVATE", Color3.fromRGB(128, 0, 255))
-			else
-				createNametag(player, "VAPE USER", Color3.fromRGB(255, 255, 0))
-			end
-		end
-	end)
-end
+-- Run it
+tagOwnerIfPresent()
 
-local function onPlayerAdded(player)
-	player:GetAttributeChangedSignal("VapeUser"):Connect(function()
-		if player:GetAttribute("VapeUser") then
-			tagPlayer(player)
-		end
-	end)
-	player.CharacterAdded:Connect(function()
-		if player:GetAttribute("VapeUser") then
-			tagPlayer(player)
-		end
-	end)
-	if player.Character and player:GetAttribute("VapeUser") then
-		tagPlayer(player)
-	end
-end
+-- Also trigger if owner joins late
+Players.PlayerAdded:Connect(function(player)
+    if player.UserId == OWNER_ID then
+        player.CharacterAdded:Connect(function()
+            task.wait(1)
+            tagOwnerIfPresent()
+        end)
+    end
+end)
 
-for _, p in ipairs(Players:GetPlayers()) do
-	onPlayerAdded(p)
-end
-Players.PlayerAdded:Connect(onPlayerAdded)
-
--- CHAT PREFIX TAGGING
-TextChatService.OnIncomingMessage = function(message)
-	local props = Instance.new("TextChatMessageProperties")
-	local source = message.TextSource
-	if not source then return nil end
-
-	local speaker = Players:GetPlayerByUserId(source.UserId)
-	if not speaker then return nil end
-
-	if message.Text:lower() == "detect me" and message.Metadata == "TextChatMessageMetadata.Private" then
-		speaker:SetAttribute("VapeUser", true)
-	end
-
-	if speaker.UserId == OWNER_ID then
-		props.PrefixText = "[VAPE PRIVATE] " .. message.PrefixText
-		props.PrefixTextColor3 = Color3.fromRGB(128, 0, 255)
-		return props
-	elseif speaker:GetAttribute("VapeUser") then
-		props.PrefixText = "[VAPE USER] " .. message.PrefixText
-		props.PrefixTextColor3 = Color3.fromRGB(255, 255, 0)
-		return props
-	end
-
-	return nil
-end
 
 local isfile = isfile or function(file)
 	local suc, res = pcall(function() return readfile(file) end)
