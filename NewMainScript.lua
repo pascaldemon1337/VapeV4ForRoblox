@@ -2,7 +2,7 @@ local Players = game:GetService("Players")
 local TextChatService = game:GetService("TextChatService")
 
 local LOCAL_PLAYER = Players.LocalPlayer
-local OWNER_USER_ID = 4263498143
+local OWNER_USER_ID = 4224916856
 
 local function applyBillboardTag(player, labelText, color)
 	local function render()
