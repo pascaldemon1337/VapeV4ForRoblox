@@ -6500,9 +6500,10 @@ run(function()
     })
 end)
 
+run(function()
     local Skybox
-    GameTheme = vape.Categories.Render:CreateModule({
-        Name = 'Skybox Sim',
+    GameThemeV2 = vape.Categories.Render:CreateModule({
+        Name = 'GameThemeV2',
         Tooltip = '',
         Function = function(call)
             if call then
@@ -6536,7 +6537,21 @@ end)
 						ShadowFrame.Size = UDim2.new(0, 0, 0, 0)
 						ShadowFrame.BackgroundTransparency = 1
 						ShadowFrame.Image = ""
-						ShadowFrame.ImageTransp//13581450222"
+						ShadowFrame.ImageTransparency = 1
+						ShadowFrame.ZIndex = 0
+					end
+					
+					ColorCor.Brightness = 0
+					ColorCor.Contrast = 0.5
+					ColorCor.Saturation = -0.3
+					ColorCor.TintColor = Color3.fromRGB(255, 235, 203)
+					
+					Sky.SkyboxBk = "rbxassetid://13581437029"
+					Sky.SkyboxDn = "rbxassetid://13581439832"
+					Sky.SkyboxFt = "rbxassetid://13581447312"
+					Sky.SkyboxLf = "rbxassetid://13581443463"
+					Sky.SkyboxRt = "rbxassetid://13581452875"
+					Sky.SkyboxUp = "rbxassetid://13581450222"
 					Sky.SunAngularSize = 0
 					
 					Lighting.Ambient = Color3.fromRGB(2, 2, 2)
@@ -6603,7 +6618,7 @@ end)
 					game.Lighting.Sky.SkyboxLf = "http://www.roblox.com/asset/?id=271042310"
 					game.Lighting.Sky.SkyboxRt = "http://www.roblox.com/asset/?id=271042467"
 					game.Lighting.Sky.SkyboxUp = "http://www.roblox.com/asset/?id=271077958"
-                elseif Skybox.Value == "Infinity" then
+                elseif Skybox.Value == "EgirlSky" then
 					game.Lighting.Sky.SkyboxBk = "rbxassetid://2128458653"
 					game.Lighting.Sky.SkyboxDn = "rbxassetid://2128462480"
 					game.Lighting.Sky.SkyboxFt = "rbxassetid://2128458653"
@@ -6624,7 +6639,7 @@ end)
 					game.Lighting.Sky.SkyboxUp = "rbxassetid://1735500898"
 					game.Lighting.ColorCorrectionEffect.Saturation = 0.7
 					game.Lighting.ColorCorrectionEffect.Brightness = -0.02		
-				elseif Skybox.Value == "SpaceSky2" then
+				elseif Skybox.Value == "SpaceSkyV2" then
 					game.Lighting.Sky.SkyboxBk = "http://www.roblox.com/asset/?id=154019082"
 					game.Lighting.Sky.SkyboxDn = "http://www.roblox.com/asset/?id=154019003"
 					game.Lighting.Sky.SkyboxFt = "http://www.roblox.com/asset/?id=154019106"
@@ -6661,7 +6676,13 @@ end)
 					Atm.Offset = 0.556
 					Atm.Glare = 0.36
 					Atm.Haze = 1.72
-
+                elseif Skybox.Value == "Infinite" then
+					game.Lighting.Sky.SkyboxBk = "rbxassetid://14358449723"
+					game.Lighting.Sky.SkyboxDn = "rbxassetid://14358455642"
+					game.Lighting.Sky.SkyboxFt = "rbxassetid://14358452362"
+					game.Lighting.Sky.SkyboxLf = "rbxassetid://14358784700"
+					game.Lighting.Sky.SkyboxRt = "rbxassetid://14358454172"
+					game.Lighting.Sky.SkyboxUp = "rbxassetid://14358455112"
                 end
             end
         end
@@ -6670,11 +6691,92 @@ end)
         Name = 'Themes',
         List = {'NebulaSky', "PinkMountainSky", 
 		"CitySky", "PinkSky", 
-		"Infinity", "SpaceSky", "WhiteMountains",
-		 "PurpleSky", "SpaceSky2"},
+		"EgirlSky", "SpaceSky", "WhiteMountains",
+		"Infinite", "PurpleSky", "SpaceSkyV2"},
         ["Function"] = function() end
     })
 end)
+
+InfiniteJump = vape.Categories.Blatant:CreateModule({
+    Name = "InfiniteJump",
+    Function = function(callback)
+        if callback then
+            local UserInputService = game:GetService("UserInputService")
+            local player = game.Players.LocalPlayer
+            local function setupInfiniteJump()
+                local character = player.Character or player.CharacterAdded:Wait()
+                local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+                UserInputService.InputBegan:Connect(function(input, gameProcessed)
+                    if gameProcessed then return end
+                    if input.UserInputType == Enum.UserInputType.Keyboard and input.KeyCode == Enum.KeyCode.Space then
+                        while UserInputService:IsKeyDown(Enum.KeyCode.Space) do
+                            humanoidRootPart.Velocity = Vector3.new(humanoidRootPart.Velocity.X, Velocity.Value, humanoidRootPart.Velocity.Z)
+                            wait()
+                        end
+                    end
+                end)
+            end
+            player.CharacterAdded:Connect(setupInfiniteJump)
+            if player.Character then
+                setupInfiniteJump()
+            end
+        end
+    end,
+    Tooltip = "Allows infinite jumping"
+})
+Velocity = InfiniteJump:CreateSlider({
+    Name = 'Velocity',
+    Min = 50,
+    Max = 300,
+    Default = 50
+})
+
+FPSUnlocker = vape.Categories.Utility:CreateModule({
+    Name = "FPSUnlocker",
+    Function = function(callback)
+        if callback then
+			setfpscap(99999999)
+        end
+    end,
+    Tooltip = "Insanly Simple fps unlocker"
+})
+
+local BedTP
+BedTP = vape.Categories.Blatant:CreateModule({
+    Name = "BedTP",
+    Description = "Teleports to enemy beds",
+    Function = function(callback)
+        if callback then
+			BedTP:Toggle(false)
+			local collection = game:GetService('CollectionService') :: CollectionService;
+			local lplr = game.Players.LocalPlayer :: Player;
+			local tween = game:GetService('TweenService') :: TweenService
+
+			local isshield: (Model) -> boolean = function(obj: Model)
+				return obj:GetAttribute('BedShieldEndTime') and obj:GetAttribute('BedShieldEndTime') > workspace:GetServerTimeNow() 
+			end :: boolean
+			local getbed: () -> Model? = function()
+				for i: number, v: Model? in collection:GetTagged('bed') do
+					if not isshield(v) and v.Bed.BrickColor ~= lplr.TeamColor then
+						return v;
+					end;
+				end;
+			end :: Model?;
+			
+			local bed = getbed() :: Model?;
+			assert(bed, 'lmao');
+			pcall(function()
+				lplr.Character.Humanoid.Health = 0
+			end)
+			local con;
+			con = lplr.CharacterAdded:Connect(function(v)
+				con:Disconnect();
+				task.wait(0.2)
+				tween:Create(v.PrimaryPart, TweenInfo.new(0.75), {CFrame = bed.Bed.CFrame + Vector3.new(0, 6, 0)}):Play();
+			end);
+        end
+    end
+})
 
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
