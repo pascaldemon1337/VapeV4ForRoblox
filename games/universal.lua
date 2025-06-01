@@ -6464,7 +6464,7 @@ run(function()
 
                     local radiusOffset = 3 
                     local heightOffset = 4 
-                    local speed = 50
+                    local speed = 100
 
                     if hrp and ball then
                         local forward = hrp.CFrame.LookVector
