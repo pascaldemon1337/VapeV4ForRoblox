@@ -6513,32 +6513,61 @@ vape.Categories.Utility:CreateModule({
     Tooltip = "Prevents server from lagbacking you after teleport or physics abuse"
 })
 
-local Players = game:GetService("Players")
-local Workspace = game:GetService("Workspace")
-local LocalPlayer = Players.LocalPlayer
+run(function()
+    local BallRideConnection
+    local speed = 40
+    local radiusOffset = 3
+    local heightOffset = 4
 
-vape.Categories.Blatant:CreateModule({
-    Name = "TPToBall",
-    Function = function(callback)
-        if callback then
-            task.spawn(function()
-                repeat task.wait() until LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-                local character = LocalPlayer.Character
-                local hrp = character:FindFirstChild("HumanoidRootPart")
+    vape.Categories.World:CreateModule({
+        Name = "BallRide",
+        Tooltip = "Hoverboard Simulator",
+        Function = function(callback)
+            if callback then
+                BallRideConnection = game:GetService("RunService").Heartbeat:Connect(function()
+                    local LocalPlayer = game:GetService("Players").LocalPlayer
+                    local character = LocalPlayer.Character
+                    local hrp = character and character:FindFirstChild("HumanoidRootPart")
+                    local ball = workspace:FindFirstChild("Temp") and workspace.Temp:FindFirstChild("Ball")
 
-                local temp = Workspace:FindFirstChild("Temp")
-                local ball = temp and temp:FindFirstChild("Ball")
+                    if hrp and ball then
+                        local forward = hrp.CFrame.LookVector
+                        local sideOffset = Vector3.new(forward.X, 0, forward.Z).Unit * radiusOffset
+                        local targetPos = ball.Position + sideOffset + Vector3.new(0, heightOffset, 0)
 
-                if hrp and ball then
-                    hrp.CFrame = ball.CFrame + Vector3.new(0, 5, 0)
-                else
-                    warn("TPToBall: Failed to find HRP or Ball.")
+                        if (hrp.Position - ball.Position).Magnitude < 10 then
+                            hrp.CFrame = CFrame.new(targetPos, ball.Position + forward * 5)
+                            hrp.AssemblyLinearVelocity = Vector3.zero
+
+                            local push = sideOffset.Unit * speed
+                            ball.AssemblyLinearVelocity = Vector3.new(push.X, ball.AssemblyLinearVelocity.Y, push.Z)
+                        end
+                    end
+                end)
+            else
+                if BallRideConnection then
+                    BallRideConnection:Disconnect()
+                    BallRideConnection = nil
                 end
-            end)
+
+                local LocalPlayer = game:GetService("Players").LocalPlayer
+                local character = LocalPlayer.Character
+                local hrp = character and character:FindFirstChild("HumanoidRootPart")
+                local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+
+                if hrp then
+                    -- Detener movimiento y aplicar pequeño empujón hacia abajo
+                    hrp.AssemblyLinearVelocity = Vector3.zero
+                    hrp.CFrame = hrp.CFrame + Vector3.new(0, -0.1, 0)
+                end
+
+                if humanoid then
+                    humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+                end
+            end
         end
-    end,
-    Tooltip = "Teleports you to the Ball once when enabled"
-})
+    })
+end)
 
 local connStamina
 vape.Categories.World:CreateModule({
