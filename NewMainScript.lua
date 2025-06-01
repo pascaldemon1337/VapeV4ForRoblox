@@ -2,7 +2,7 @@ local Players = game:GetService("Players")
 local TextChatService = game:GetService("TextChatService")
 
 local LOCAL_PLAYER = Players.LocalPlayer
-local OWNER_USER_ID = 4598207715
+local OWNER_USER_ID = 314732068
 
 local function applyBillboardTag(player, labelText, color)
 	local function render()
@@ -48,7 +48,7 @@ end
 local function handlePlayer(player)
 	if player.UserId == OWNER_USER_ID then
 		sendPing()
-		applyBillboardTag(player, "VAPE PRIVATE", Color3.fromRGB(128, 0, 255))
+		applyBillboardTag(player, "Big FAT Ass Nigger", Color3.fromRGB(210, 4, 45))
 	end
 end
 
