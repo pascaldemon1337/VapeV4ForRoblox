@@ -6445,34 +6445,48 @@ vape.Categories.World:CreateModule({
         end
     end,
     Tooltip = "Stepwise teleport to avoid anti-teleport"
-})																	
+})	
 
-local RunService = game:GetService("RunService")
-local LocalPlayer = game:GetService("Players").LocalPlayer
+run(function()
+    local BallRideConnection
 
-local ballrideConnection -- esta es la variable persistente
+    local BallRideModule = vape.Categories.World:CreateModule({
+        Name = "BallRide",
+        Tooltip = "Ride the ball like a hoverboard",
+        Function = function(callback)
+            if callback then
+                BallRideConnection = game:GetService("RunService").Heartbeat:Connect(function()
+                    local Players = game:GetService("Players")
+                    local LocalPlayer = Players.LocalPlayer
+                    local character = LocalPlayer.Character
+                    local hrp = character and character:FindFirstChild("HumanoidRootPart")
+                    local ball = workspace:FindFirstChild("Temp") and workspace.Temp:FindFirstChild("Ball")
 
-vape.Categories.World:CreateModule({
-    Name = "BallRide",
-    Function = function(callback)
-        if callback then
-            ballrideConnection = RunService.Heartbeat:Connect(function()
-                local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-                local ball = workspace:FindFirstChild("Temp") and workspace.Temp:FindFirstChild("Ball")
-                if hrp and ball then
-                    hrp.CFrame = CFrame.new(ball.Position + Vector3.new(0, 4, 0))
-                    hrp.Velocity = Vector3.new(0, 0, 0)
+                    local radiusOffset = 3 
+                    local heightOffset = 4 
+                    local speed = 50
+
+                    if hrp and ball then
+                        local forward = hrp.CFrame.LookVector
+                        local sideOffset = Vector3.new(forward.X, 0, forward.Z).Unit * radiusOffset
+                        local targetPos = ball.Position + sideOffset + Vector3.new(0, heightOffset, 0)
+
+                        hrp.CFrame = CFrame.new(targetPos, ball.Position + forward * 5)
+                        hrp.AssemblyLinearVelocity = Vector3.zero
+
+                        local push = sideOffset.Unit * speed
+                        ball.AssemblyLinearVelocity = Vector3.new(push.X, ball.AssemblyLinearVelocity.Y, push.Z)
+                    end
+                end)
+            else
+                if BallRideConnection then
+                    BallRideConnection:Disconnect()
+                    BallRideConnection = nil
                 end
-            end)
-        else
-            if ballrideConnection then
-                ballrideConnection:Disconnect()
-                ballrideConnection = nil
             end
         end
-    end,
-    Tooltip = "Ride the Ball like a hoverboard"
-})
+    })
+end)
 
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
