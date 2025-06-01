@@ -6449,22 +6449,20 @@ vape.Categories.World:CreateModule({
 
 run(function()
     local BallRideConnection
+    local speed = 40
+    local radiusOffset = 3
+    local heightOffset = 4
 
-    local BallRideModule = vape.Categories.World:CreateModule({
+    vape.Categories.World:CreateModule({
         Name = "BallRide",
-        Tooltip = "Ride the ball like a hoverboard",
+        Tooltip = "Hoverboard Sim",
         Function = function(callback)
             if callback then
                 BallRideConnection = game:GetService("RunService").Heartbeat:Connect(function()
-                    local Players = game:GetService("Players")
-                    local LocalPlayer = Players.LocalPlayer
+                    local LocalPlayer = game:GetService("Players").LocalPlayer
                     local character = LocalPlayer.Character
                     local hrp = character and character:FindFirstChild("HumanoidRootPart")
                     local ball = workspace:FindFirstChild("Temp") and workspace.Temp:FindFirstChild("Ball")
-
-                    local radiusOffset = 3 
-                    local heightOffset = 4 
-                    local speed = 100
 
                     if hrp and ball then
                         local forward = hrp.CFrame.LookVector
@@ -6482,6 +6480,20 @@ run(function()
                 if BallRideConnection then
                     BallRideConnection:Disconnect()
                     BallRideConnection = nil
+                end
+
+                local LocalPlayer = game:GetService("Players").LocalPlayer
+                local character = LocalPlayer.Character
+                local hrp = character and character:FindFirstChild("HumanoidRootPart")
+                local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+
+                if hrp then
+                    hrp.AssemblyLinearVelocity = Vector3.zero
+                    hrp.CFrame = hrp.CFrame + Vector3.new(0, -0.1, 0)
+                end
+
+                if humanoid then
+                    humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
                 end
             end
         end
