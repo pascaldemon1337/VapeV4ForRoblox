@@ -6504,7 +6504,7 @@ run(function()
     local Skybox
     GameThemeV2 = vape.Categories.Render:CreateModule({
         Name = 'GameThemeV2',
-        Tooltip = '',
+        Tooltip = 'Skybox simulator',
         Function = function(call)
             if call then
                 if Skybox.Value == "NebulaSky" then
