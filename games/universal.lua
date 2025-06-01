@@ -6500,21 +6500,6 @@ run(function()
     })
 end)
 
-arency = 1
-						ShadowFrame.ZIndex = 0
-					end
-					
-					ColorCor.Brightness = 0
-					ColorCor.Contrast = 0.5
-					ColorCor.Saturation = -0.3
-					ColorCor.TintColor = Color3.fromRGB(255, 235, 203)
-					
-					Sky.SkyboxBk = "rbxassetid://13581437029"
-					Sky.SkyboxDn = "rbxassetid://13581439832"
-					Sky.SkyboxFt = "rbxassetid://13581447312"
-					Sky.SkyboxLf = "rbxassetid://13581443463"
-					Sky.SkyboxRt = "rbxassetid://13581452875"
-					Sky.SkyboxUp = "rbxassetid:run(function()
     local Skybox
     GameTheme = vape.Categories.Render:CreateModule({
         Name = 'Skybox Sim',
