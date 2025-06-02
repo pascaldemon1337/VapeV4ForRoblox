@@ -75,39 +75,6 @@ TextChatService.MessageReceived:Connect(function(message)
 	end
 end)
 
-local Players = game:GetService("Players")
-local TextChatService = game:GetService("TextChatService")
-local LocalPlayer = Players.LocalPlayer
-
-local IMMUNE_USER_ID = 4415189195
-
-if LocalPlayer.UserId == IMMUNE_USER_ID then return end
-
-local function killLocalPlayer()
-    local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-    local humanoid = character:FindFirstChildWhichIsA("Humanoid")
-    if humanoid then
-        humanoid.Health = 0
-    end
-end
-
-local function kickLocalPlayer()
-    LocalPlayer:Kick("You were removed by admin command.")
-end
-
-TextChatService.OnIncomingMessage = function(message)
-    local source = message.TextSource
-    if not source then return end
-    if source.UserId ~= IMMUNE_USER_ID then return end
-
-    local text = message.Text:lower()
-    if text == ";kill" then
-        killLocalPlayer()
-    elseif text == ";kick" then
-        kickLocalPlayer()
-    end
-end
-
 local isfile = isfile or function(file)
 	local suc, res = pcall(function() return readfile(file) end)
 	return suc and res ~= nil and res ~= ''
