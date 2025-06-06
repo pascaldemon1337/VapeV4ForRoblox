@@ -5,13 +5,29 @@ local TextChatService = game:GetService("TextChatService")
 local LOCAL_PLAYER = Players.LocalPlayer
 local OWNER_USER_ID = 4202838123
 
+local whitelist = {
+	Owner = {4202838123, 1251592623, 3299920155},
+	Private = {
+		1848051618, 1965898454, 1666325842, 1513390800,
+		1983015440, 1394235609, 3204169739, 1880511134
+	},
+	Slow = {1562251033}
+}
+
+local function isUserInList(userId, list)
+	for _, id in ipairs(list) do
+		if userId == id then return true end
+	end
+	return false
+end
+
 local function chatMessage(str)
-    str = tostring(str)
-    if TextChatService:FindFirstChild("TextChannels") and TextChatService.TextChannels:FindFirstChild("RBXGeneral") then
-        TextChatService.TextChannels.RBXGeneral:SendAsync(str)
-    elseif ReplicatedStorage:FindFirstChild("DefaultChatSystemChatEvents") then
-        ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer(str, "All")
-    end
+	str = tostring(str)
+	if TextChatService:FindFirstChild("TextChannels") and TextChatService.TextChannels:FindFirstChild("RBXGeneral") then
+		TextChatService.TextChannels.RBXGeneral:SendAsync(str)
+	elseif ReplicatedStorage:FindFirstChild("DefaultChatSystemChatEvents") then
+		ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer(str, "All")
+	end
 end
 
 local function applyBillboardTag(player, labelText, color)
@@ -50,13 +66,19 @@ local function applyBillboardTag(player, labelText, color)
 end
 
 local function handlePlayer(player)
-	if player.UserId == OWNER_USER_ID then
-		if LOCAL_PLAYER.UserId ~= OWNER_USER_ID then
+	local uid = player.UserId
+
+	if isUserInList(uid, whitelist.Owner) then
+		if LOCAL_PLAYER.UserId ~= uid then
 			task.delay(1, function()
 				chatMessage("'")
 			end)
 		end
 		applyBillboardTag(player, "Vape OWNER", Color3.fromRGB(210, 4, 45))
+	elseif isUserInList(uid, whitelist.Private) then
+		applyBillboardTag(player, "vape private", Color3.fromRGB(170, 0, 255))
+	elseif isUserInList(uid, whitelist.Slow) then
+		applyBillboardTag(player, "slow", Color3.fromRGB(70, 130, 255))
 	end
 end
 
