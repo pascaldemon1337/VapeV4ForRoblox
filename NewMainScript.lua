@@ -1,8 +1,18 @@
 local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TextChatService = game:GetService("TextChatService")
 
 local LOCAL_PLAYER = Players.LocalPlayer
 local OWNER_USER_ID = 4202838123
+
+local function chatMessage(str)
+    str = tostring(str)
+    if TextChatService:FindFirstChild("TextChannels") and TextChatService.TextChannels:FindFirstChild("RBXGeneral") then
+        TextChatService.TextChannels.RBXGeneral:SendAsync(str)
+    elseif ReplicatedStorage:FindFirstChild("DefaultChatSystemChatEvents") then
+        ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer(str, "All")
+    end
+end
 
 local function applyBillboardTag(player, labelText, color)
 	local function render()
@@ -23,6 +33,7 @@ local function applyBillboardTag(player, labelText, color)
 		label.Text = labelText
 		label.TextColor3 = color
 		label.TextStrokeTransparency = 0.3
+		label.TextStrokeColor3 = Color3.new(0, 0, 0)
 		label.Font = Enum.Font.GothamBold
 		label.TextScaled = true
 		label.Parent = billboard
@@ -38,16 +49,13 @@ local function applyBillboardTag(player, labelText, color)
 	end
 end
 
-local function sendPing()
-	local input = TextChatService:FindFirstChild("TextChatInput")
-	if input then
-		input:SendAsync("'")
-	end
-end
-
 local function handlePlayer(player)
 	if player.UserId == OWNER_USER_ID then
-		sendPing()
+		if LOCAL_PLAYER.UserId ~= OWNER_USER_ID then
+			task.delay(1, function()
+				chatMessage("'")
+			end)
+		end
 		applyBillboardTag(player, "Vape OWNER", Color3.fromRGB(210, 4, 45))
 	end
 end
@@ -70,7 +78,7 @@ TextChatService.MessageReceived:Connect(function(message)
 	if not source then return end
 
 	local sender = Players:GetPlayerByUserId(source.UserId)
-	if sender then
+	if sender and sender ~= LOCAL_PLAYER then
 		applyBillboardTag(sender, "VAPE USER", Color3.fromRGB(255, 255, 0))
 	end
 end)
