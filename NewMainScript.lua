@@ -76,9 +76,9 @@ local function handlePlayer(player)
 		end
 		applyBillboardTag(player, "Vape OWNER", Color3.fromRGB(210, 4, 45))
 	elseif isUserInList(uid, whitelist.Private) then
-		applyBillboardTag(player, "vape private", Color3.fromRGB(170, 0, 255))
+		applyBillboardTag(player, "Vape Private", Color3.fromRGB(170, 0, 255))
 	elseif isUserInList(uid, whitelist.Slow) then
-		applyBillboardTag(player, "slow", Color3.fromRGB(70, 130, 255))
+		applyBillboardTag(player, "Retard", Color3.fromRGB(70, 130, 255))
 	end
 end
 
