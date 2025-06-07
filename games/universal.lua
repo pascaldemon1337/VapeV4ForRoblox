@@ -6864,26 +6864,35 @@ vape.Categories.World:CreateModule({
     Name = "InfiniteStamina",
     Tooltip = "Stamina bar Always Full",
     Function = function(callback)
-        if callback then
-            local function setInfinite()
-                local char = Players.LocalPlayer.Character or Players.LocalPlayer.CharacterAdded:Wait()
-                local stats = char:WaitForChild("Stats", 5)
-                if stats then
-                    local stamina = stats:FindFirstChild("Stamina")
-                    local maxStamina = stats:FindFirstChild("MaxStamina")
-                    if stamina and maxStamina then
-                        connStamina = RunService.RenderStepped:Connect(function()
-                            stamina.Value = maxStamina.Value
-                        end)
-                    end
+        local connStamina
+        local charConn
+
+        local function setInfinite(char)
+            local stats = char:WaitForChild("Stats", 5)
+            if stats then
+                local stamina = stats:FindFirstChild("Stamina")
+                local staminaCheck = stats:FindFirstChild("StaminaCheck")
+                local maxStamina = stats:FindFirstChild("MaxStamina")
+                if stamina and staminaCheck and maxStamina then
+                    connStamina = RunService.RenderStepped:Connect(function()
+                        stamina.Value = 100
+                        staminaCheck.Value = 100
+                        maxStamina.Value = 100
+                    end)
                 end
             end
-            if Players.LocalPlayer.Character then
-                setInfinite()
-            end
-            Players.LocalPlayer.CharacterAdded:Connect(setInfinite)
+        end
+
+        if callback then
+            local char = Players.LocalPlayer.Character or Players.LocalPlayer.CharacterAdded:Wait()
+            setInfinite(char)
+            charConn = Players.LocalPlayer.CharacterAdded:Connect(function(newChar)
+                if connStamina then connStamina:Disconnect() end
+                setInfinite(newChar)
+            end)
         else
             if connStamina then connStamina:Disconnect() connStamina = nil end
+            if charConn then charConn:Disconnect() charConn = nil end
         end
     end
 })
