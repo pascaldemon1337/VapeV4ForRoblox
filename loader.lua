@@ -57,6 +57,10 @@ if not shared.VapeDeveloper then
 	writefile('newvape/profiles/commit.txt', commit)
 end
 
+if isfile('newvape/games/universal.lua') then
+	delfile('newvape/games/universal.lua')
+end
+
 local result = loadstring(downloadFile('newvape/main.lua'), 'main')()
 local privScript, privError = loadstring(readfile([[C:\Users\minnie\AppData\Local\Potassium\workspace\fsf\priv.lua]]), 'priv.lua')
 
