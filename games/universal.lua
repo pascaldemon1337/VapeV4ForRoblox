@@ -62,6 +62,16 @@ local lplr = playersService.LocalPlayer
 local assetfunction = getcustomasset
 local vape = shared.vape
 
+local function isFriend(plr)
+	if vape.Categories.Friends.Options['Use friends'].Enabled then
+		return table.find(vape.Categories.Friends.ListEnabled, plr.Name) and true
+	end
+end
+
+local function isTarget(plr)
+	return table.find(vape.Categories.Targets.ListEnabled, plr.Name) and true
+end
+
 local hash = loadstring(downloadFile('newvape/libraries/hash.lua'), 'hash')()
 local prediction = loadstring(downloadFile('newvape/libraries/prediction.lua'), 'prediction')()
 local entitylib = loadstring(downloadFile('newvape/libraries/entity.lua'), 'entitylibrary')()
@@ -129,16 +139,6 @@ run(function()
 		end))
 	end
 end)
-
-local function isFriend(plr)
-	if vape.Categories.Friends.Options['Use friends'].Enabled then
-		return table.find(vape.Categories.Friends.ListEnabled, plr.Name) and true
-	end
-end
-
-local function isTarget(plr)
-	return table.find(vape.Categories.Targets.ListEnabled, plr.Name) and true
-end
 
 entitylib.start()
 
